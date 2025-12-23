@@ -200,13 +200,13 @@ function renderReveal() {
     if (state.showCategoryToImposter) {
       clues.push(`<strong>Category:</strong> ${state.category}`);
     } else {
-      clues.push(`<strong>Category:</strong> Hidden this round`);
+      clues.push(`<span class="danger-text">❌ Category hidden this round</span>`);
     }
 
     if (state.showHintToImposter) {
       clues.push(`<strong>Hint:</strong> ${state.hint}`);
     } else {
-      clues.push(`<strong>Hint:</strong> Not shown to Imposter`);
+      clues.push(`<span class="danger-text">❌ Hint not shown this round</span>`);
     }
     clues.push("Blend in and figure out the secret word.");
     roleDetails.innerHTML = clues.map((item) => `<li>${item}</li>`).join("");
