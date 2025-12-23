@@ -172,6 +172,12 @@ button:hover {
   box-shadow: 0 8px 20px rgba(34, 211, 238, 0.25);
 }
 
+.start-button {
+  width: 100%;
+  min-height: 56px;
+  font-size: 1.05rem;
+}
+
 .secondary {
   background: #11182a;
   color: var(--text);

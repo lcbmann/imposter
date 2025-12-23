@@ -118,7 +118,11 @@ function setMessage(message, isError = false) {
 
 function showSetupPanel() {
   setupPanel.classList.remove("is-hidden");
+  setupPanel.removeAttribute("aria-hidden");
+  setupPanel.hidden = false;
   revealPanel.classList.add("is-hidden");
+  revealPanel.setAttribute("aria-hidden", "true");
+  revealPanel.hidden = true;
   updateStatus("Waiting to start");
   toggleViews({ hidden: true });
   state.roundReady = false;
@@ -129,7 +133,12 @@ function showSetupPanel() {
 
 function showRevealPanel() {
   setupPanel.classList.add("is-hidden");
+  setupPanel.setAttribute("aria-hidden", "true");
+  setupPanel.hidden = true;
   revealPanel.classList.remove("is-hidden");
+  revealPanel.removeAttribute("aria-hidden");
+  revealPanel.hidden = false;
+  console.log("[Debug] Switched to role reveal panel.");
 }
 
 function startRound({ reuseWord = false } = {}) {
