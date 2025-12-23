@@ -48,6 +48,15 @@
             <small>Pick a category or keep it random.</small>
           </label>
 
+          <label class="field">
+            <span>Language</span>
+            <select id="languageSelect">
+              <option value="en" selected>English</option>
+              <option value="de">Deutsch</option>
+            </select>
+            <small>Choose the word list language.</small>
+          </label>
+
           <div class="field toggles">
             <p class="eyebrow muted">Imposter clues</p>
             <label class="toggle">
@@ -81,6 +90,7 @@
               <span>Auto-pick who talks first after reveals</span>
             </label>
             <small>When enabled, a random starter is shown automatically at the end.</small>
+            <button id="resetWords" class="ghost">Reset used words</button>
           </div>
         </div>
 
