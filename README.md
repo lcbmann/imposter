@@ -10,6 +10,7 @@ A lightweight, pass-the-phone party game. One player is secretly the Imposter, e
 
 ## Getting started
 Open `index.html` in a modern browser. No build step is required, so it works on GitHub Pages out of the box.
+Open `index.html` in a modern browser. No build step is required.
 
 ## How to play
 1. Choose the player count and optionally pick a category.

@@ -65,6 +65,7 @@
           <strong>How it works:</strong> One random Imposter sees “Imposter” (plus any clues you allow). Crewmates see the secret word. Tap to reveal, tap again to hide, then pass the phone clockwise.
         </div>
         <div id="setupMessage" class="message message-hidden" role="status" aria-live="polite"></div>
+        <div id="setupMessage" class="message message-hidden"></div>
       </section>
 
       <section class="panel">
@@ -78,6 +79,11 @@
 
         <div id="roundContainer" class="round-container">
           <div id="hiddenView" class="card focus-card" tabindex="0">
+          <span class="pill ghost" id="roundStatus">Waiting to start</span>
+        </header>
+
+        <div id="roundContainer">
+          <div id="hiddenView" class="card">
             <p class="eyebrow muted">Pass the phone</p>
             <h3 id="playerPrompt">Player 1, your turn</h3>
             <p class="muted">Tap below when you’re ready to see your role.</p>
@@ -86,6 +92,9 @@
           </div>
 
           <div id="revealView" class="card focus-card is-hidden" tabindex="0">
+          </div>
+
+          <div id="revealView" class="card is-hidden">
             <p class="eyebrow" id="roleTag">Role</p>
             <h3 id="roleHeadline">You are the Imposter</h3>
             <ul id="roleDetails" class="detail-list"></ul>
