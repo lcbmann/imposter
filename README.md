@@ -9,6 +9,7 @@ A lightweight, pass-the-phone party game. One player is secretly the Imposter, e
 - Quick reshuffle to reuse the same word with a new Imposter.
 
 ## Getting started
+Open `index.html` in a modern browser. No build step is required, so it works on GitHub Pages out of the box.
 Open `index.html` in a modern browser. No build step is required.
 
 ## How to play
@@ -19,3 +20,7 @@ Open `index.html` in a modern browser. No build step is required.
 4. After everyone has seen their role, discuss and vote out one player. Crewmates win if they eject the Imposter; otherwise, the Imposter wins.
 
 If you run into trouble, share any console logs (starting with `[Debug]`) so we can help diagnose quickly.
+
+### Mobile tips
+- Landscape mode gives bigger tap targets during reveals.
+- Sticky headers and safe-area padding keep controls readable on small screens.

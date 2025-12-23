@@ -117,6 +117,7 @@ function startRound({ reuseWord = false } = {}) {
   const playerCount = Number(playerCountInput.value);
   if (Number.isNaN(playerCount) || playerCount < 3 || playerCount > 8) {
     setMessage("Player count must be between 3 and 8.", true);
+    console.log("[Debug] Invalid player count entered:", playerCount);
     return;
   }
 
@@ -200,6 +201,7 @@ function renderReveal() {
 function revealRole() {
   if (!state.roundReady) {
     setMessage("Start a round first.", true);
+    console.log("[Debug] Reveal blocked — round has not been started.");
     return;
   }
   toggleViews({ revealed: true });

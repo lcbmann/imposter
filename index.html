@@ -64,6 +64,7 @@
         <div class="note">
           <strong>How it works:</strong> One random Imposter sees “Imposter” (plus any clues you allow). Crewmates see the secret word. Tap to reveal, tap again to hide, then pass the phone clockwise.
         </div>
+        <div id="setupMessage" class="message message-hidden" role="status" aria-live="polite"></div>
         <div id="setupMessage" class="message message-hidden"></div>
       </section>
 
@@ -73,6 +74,11 @@
             <p class="eyebrow">Step 2</p>
             <h2>Reveal roles</h2>
           </div>
+          <span class="pill ghost" id="roundStatus" role="status" aria-live="polite">Waiting to start</span>
+        </header>
+
+        <div id="roundContainer" class="round-container">
+          <div id="hiddenView" class="card focus-card" tabindex="0">
           <span class="pill ghost" id="roundStatus">Waiting to start</span>
         </header>
 
@@ -82,6 +88,10 @@
             <h3 id="playerPrompt">Player 1, your turn</h3>
             <p class="muted">Tap below when you’re ready to see your role.</p>
             <button id="revealButton" class="primary stretch">Tap to reveal</button>
+            <p class="safe-area-hint">Tip: Use landscape for bigger tap targets.</p>
+          </div>
+
+          <div id="revealView" class="card focus-card is-hidden" tabindex="0">
           </div>
 
           <div id="revealView" class="card is-hidden">
@@ -89,6 +99,7 @@
             <h3 id="roleHeadline">You are the Imposter</h3>
             <ul id="roleDetails" class="detail-list"></ul>
             <button id="hideButton" class="secondary stretch">Hide &amp; pass</button>
+            <p class="muted small">Tap or press space/enter to hide on mobile/desktop.</p>
           </div>
 
           <div id="completeView" class="card is-hidden">
