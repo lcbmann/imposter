@@ -49,8 +49,9 @@
           </label>
 
           <div class="field toggles">
+            <p class="eyebrow muted">Imposter clues</p>
             <label class="toggle">
-              <input type="checkbox" id="categoryToggle" checked />
+              <input type="checkbox" id="categoryToggle" />
               <span>Show the Imposter the <strong>category</strong></span>
             </label>
             <label class="toggle">
@@ -58,6 +59,28 @@
               <span>Show the Imposter a <strong>hint</strong></span>
             </label>
             <small>Enable either or both to make the Imposter’s job easier.</small>
+          </div>
+
+          <div class="field toggles">
+            <p class="eyebrow muted">Crewmate clues</p>
+            <label class="toggle">
+              <input type="checkbox" id="crewCategoryToggle" />
+              <span>Show Crewmates the <strong>category</strong></span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="crewHintToggle" />
+              <span>Show Crewmates the <strong>hint</strong></span>
+            </label>
+            <small>Defaults off so only the word is shown.</small>
+          </div>
+
+          <div class="field toggles">
+            <p class="eyebrow muted">Round options</p>
+            <label class="toggle">
+              <input type="checkbox" id="autoStarterToggle" />
+              <span>Auto-pick who talks first after reveals</span>
+            </label>
+            <small>When enabled, a random starter is shown automatically at the end.</small>
           </div>
         </div>
 

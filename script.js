@@ -2,6 +2,9 @@ const categorySelect = document.getElementById("categorySelect");
 const playerCountInput = document.getElementById("playerCount");
 const categoryToggle = document.getElementById("categoryToggle");
 const hintToggle = document.getElementById("hintToggle");
+const crewCategoryToggle = document.getElementById("crewCategoryToggle");
+const crewHintToggle = document.getElementById("crewHintToggle");
+const autoStarterToggle = document.getElementById("autoStarterToggle");
 const startRoundButton = document.getElementById("startRound");
 const revealButton = document.getElementById("revealButton");
 const hideButton = document.getElementById("hideButton");
@@ -95,6 +98,9 @@ const state = {
   hint: "",
   showCategoryToImposter: true,
   showHintToImposter: false,
+  showCategoryToCrewmate: false,
+  showHintToCrewmate: false,
+  autoPickStarter: false,
   roundReady: false,
 };
 
@@ -183,6 +189,9 @@ function startRound({ reuseWord = false } = {}) {
   state.currentPlayer = 1;
   state.showCategoryToImposter = categoryToggle.checked;
   state.showHintToImposter = hintToggle.checked;
+  state.showCategoryToCrewmate = crewCategoryToggle.checked;
+  state.showHintToCrewmate = crewHintToggle.checked;
+  state.autoPickStarter = autoStarterToggle.checked;
   state.roundReady = true;
   state.imposterIndex = Math.floor(Math.random() * playerCount) + 1;
 
@@ -200,7 +209,7 @@ function startRound({ reuseWord = false } = {}) {
   toggleViews({ hidden: true });
   showRevealPanel();
   console.log(
-    `[Debug] New round started — players: ${playerCount}, imposter: ${state.imposterIndex}, category: ${state.category}, word: ${state.word}, categoryClue: ${state.showCategoryToImposter}, hintClue: ${state.showHintToImposter}`
+    `[Debug] New round started — players: ${playerCount}, imposter: ${state.imposterIndex}, category: ${state.category}, word: ${state.word}, categoryClue: ${state.showCategoryToImposter}, hintClue: ${state.showHintToImposter}, crewCategory: ${state.showCategoryToCrewmate}, crewHint: ${state.showHintToCrewmate}, autoStarter: ${state.autoPickStarter}`
   );
 }
 
@@ -246,6 +255,8 @@ function renderReveal() {
     roleHeadline.textContent = "You are a Crewmate";
     const details = [
       `<span class="highlight-word">${state.word}</span>`,
+      ...(state.showCategoryToCrewmate ? [`<span class="highlight-clue">Category: ${state.category}</span>`] : []),
+      ...(state.showHintToCrewmate ? [`<span class="highlight-clue">Hint: ${state.hint}</span>`] : []),
       "Keep this secret. Work together to find the Imposter.",
     ];
     roleDetails.innerHTML = details.map((item) => `<li>${item}</li>`).join("");
@@ -272,6 +283,9 @@ function hideRole() {
   if (state.currentPlayer >= state.playerCount) {
     toggleViews({ complete: true });
     updateStatus("Ready to vote");
+    if (state.autoPickStarter) {
+      pickStartingPlayer();
+    }
     console.log("[Debug] All roles viewed. Begin discussion and voting.");
     return;
   }

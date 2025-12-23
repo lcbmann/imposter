@@ -130,6 +130,10 @@ h3 {
   font-weight: 600;
 }
 
+.field p.eyebrow {
+  margin-bottom: 0;
+}
+
 .field small {
   color: var(--muted);
 }
