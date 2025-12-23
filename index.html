@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Imposter | Party Word Game</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Party game</p>
+        <h1>Imposter</h1>
+        <p class="lead">
+          Pass the phone around, reveal your role, and keep the secret word safe from the Imposter.
+        </p>
+      </div>
+      <div class="pill-group">
+        <span class="pill">3-8 players</span>
+        <span class="pill pill-info">Word + deception</span>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="panel">
+        <header class="panel-header">
+          <div>
+            <p class="eyebrow">Step 1</p>
+            <h2>Set up the round</h2>
+          </div>
+          <button id="startRound" class="primary">Start round</button>
+        </header>
+
+        <div class="form">
+          <label class="field">
+            <span>Number of players</span>
+            <input id="playerCount" type="number" min="3" max="8" value="6" />
+            <small>Must be between 3 and 8.</small>
+          </label>
+
+          <label class="field">
+            <span>Category</span>
+            <select id="categorySelect"></select>
+            <small>Pick a category or keep it random.</small>
+          </label>
+
+          <div class="field toggles">
+            <label class="toggle">
+              <input type="checkbox" id="categoryToggle" checked />
+              <span>Show the Imposter the <strong>category</strong></span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" id="hintToggle" />
+              <span>Show the Imposter a <strong>hint</strong></span>
+            </label>
+            <small>Enable either or both to make the Imposter’s job easier.</small>
+          </div>
+        </div>
+
+        <div class="note">
+          <strong>How it works:</strong> One random Imposter sees “Imposter” (plus any clues you allow). Crewmates see the secret word. Tap to reveal, tap again to hide, then pass the phone clockwise.
+        </div>
+        <div id="setupMessage" class="message message-hidden"></div>
+      </section>
+
+      <section class="panel">
+        <header class="panel-header">
+          <div>
+            <p class="eyebrow">Step 2</p>
+            <h2>Reveal roles</h2>
+          </div>
+          <span class="pill ghost" id="roundStatus">Waiting to start</span>
+        </header>
+
+        <div id="roundContainer">
+          <div id="hiddenView" class="card">
+            <p class="eyebrow muted">Pass the phone</p>
+            <h3 id="playerPrompt">Player 1, your turn</h3>
+            <p class="muted">Tap below when you’re ready to see your role.</p>
+            <button id="revealButton" class="primary stretch">Tap to reveal</button>
+          </div>
+
+          <div id="revealView" class="card is-hidden">
+            <p class="eyebrow" id="roleTag">Role</p>
+            <h3 id="roleHeadline">You are the Imposter</h3>
+            <ul id="roleDetails" class="detail-list"></ul>
+            <button id="hideButton" class="secondary stretch">Hide &amp; pass</button>
+          </div>
+
+          <div id="completeView" class="card is-hidden">
+            <p class="eyebrow">All roles revealed</p>
+            <h3>Discuss, then vote out the Imposter.</h3>
+            <p class="muted">Need a fresh word? Start another round.</p>
+            <div class="actions">
+              <button id="restartRound" class="primary">Start another round</button>
+              <button id="reshuffleRoles" class="ghost">Reuse word, reshuffle roles</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
