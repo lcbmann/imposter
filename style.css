@@ -50,6 +50,10 @@ body {
   border: 1px solid var(--border);
 }
 
+.app-header.header-hidden {
+  display: none;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -261,6 +265,12 @@ button:hover {
   margin: 0 0 8px;
 }
 
+.role-badge {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 .detail-list {
   list-style: none;
   padding: 0;
@@ -345,13 +355,14 @@ button:hover {
   font-weight: 700;
 }
 
+.starter-result {
+  font-size: 1.05rem;
+  margin-top: 8px;
+}
+
 @media (max-width: 640px) {
   .app-header {
     flex-direction: column;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    backdrop-filter: blur(8px);
   }
 
   .panel-header {

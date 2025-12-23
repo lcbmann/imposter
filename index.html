@@ -11,7 +11,7 @@
 </head>
 <body>
   <div class="app-shell">
-    <header class="app-header">
+    <header class="app-header" id="appHeader">
       <div>
         <p class="eyebrow">Party game</p>
         <h1>Imposter</h1>
@@ -98,12 +98,14 @@
 
           <div id="completeView" class="card is-hidden">
             <p class="eyebrow">All roles revealed</p>
-            <h3>Discuss, then vote out the Imposter.</h3>
+            <h3 class="role-title">Discuss, then vote out the Imposter.</h3>
             <p class="muted">Need a fresh word? Start another round.</p>
             <div class="actions">
               <button id="restartRound" class="primary">Start another round</button>
               <button id="reshuffleRoles" class="ghost">Reuse word, reshuffle roles</button>
+              <button id="pickStarter" class="primary">Pick starting player</button>
             </div>
+            <p id="starterResult" class="starter-result muted"></p>
           </div>
         </div>
       </section>

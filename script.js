@@ -8,6 +8,9 @@ const hideButton = document.getElementById("hideButton");
 const restartRoundButton = document.getElementById("restartRound");
 const reshuffleRolesButton = document.getElementById("reshuffleRoles");
 const editSettingsButton = document.getElementById("editSettings");
+const pickStarterButton = document.getElementById("pickStarter");
+const starterResult = document.getElementById("starterResult");
+const appHeader = document.getElementById("appHeader");
 const setupPanel = document.getElementById("setupPanel");
 const revealPanel = document.getElementById("revealPanel");
 const hiddenView = document.getElementById("hiddenView");
@@ -123,6 +126,7 @@ function showSetupPanel() {
   revealPanel.classList.add("is-hidden");
   revealPanel.setAttribute("aria-hidden", "true");
   revealPanel.hidden = true;
+  appHeader.classList.remove("header-hidden");
   updateStatus("Waiting to start");
   toggleViews({ hidden: true });
   state.roundReady = false;
@@ -138,6 +142,7 @@ function showRevealPanel() {
   revealPanel.classList.remove("is-hidden");
   revealPanel.removeAttribute("aria-hidden");
   revealPanel.hidden = false;
+  appHeader.classList.add("header-hidden");
   console.log("[Debug] Switched to role reveal panel.");
 }
 
@@ -193,6 +198,7 @@ function renderReveal() {
   roleTag.textContent = isImposter ? "Imposter" : "Crewmate";
   roleTag.classList.toggle("role-imposter", isImposter);
   roleTag.classList.toggle("role-crewmate", !isImposter);
+  roleTag.classList.add("role-badge");
 
   if (isImposter) {
     roleHeadline.textContent = "You are the Imposter";
@@ -258,6 +264,12 @@ function reshuffleRoles() {
   );
 }
 
+function pickStartingPlayer() {
+  const starter = Math.floor(Math.random() * state.playerCount) + 1;
+  starterResult.textContent = `Player ${starter} starts the talking this round.`;
+  console.log(`[Debug] Starter selected: Player ${starter}`);
+}
+
 function attachHandlers() {
   startRoundButton.addEventListener("click", () => startRound());
   revealButton.addEventListener("click", revealRole);
@@ -265,6 +277,7 @@ function attachHandlers() {
   restartRoundButton.addEventListener("click", () => startRound());
   reshuffleRolesButton.addEventListener("click", () => startRound({ reuseWord: true }));
   editSettingsButton.addEventListener("click", showSetupPanel);
+  pickStarterButton.addEventListener("click", pickStartingPlayer);
 }
 
 function init() {
