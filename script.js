@@ -212,11 +212,7 @@ function renderReveal() {
     roleDetails.innerHTML = clues.map((item) => `<li>${item}</li>`).join("");
   } else {
     roleHeadline.textContent = "You are a Crewmate";
-    const details = [
-      `<strong>Word:</strong> ${state.word}`,
-      `<strong>Category:</strong> ${state.category}`,
-      `<strong>Hint:</strong> ${state.hint}`,
-    ];
+    const details = [`<strong>Word:</strong> ${state.word}`, "Keep this secret. Work together to find the Imposter."];
     roleDetails.innerHTML = details.map((item) => `<li>${item}</li>`).join("");
   }
 
