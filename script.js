@@ -199,18 +199,19 @@ function renderReveal() {
   roleTag.classList.toggle("role-imposter", isImposter);
   roleTag.classList.toggle("role-crewmate", !isImposter);
   roleTag.classList.add("role-badge");
+  revealView.classList.toggle("imposter-card", isImposter);
 
   if (isImposter) {
     roleHeadline.textContent = "You are the Imposter";
     const clues = [];
     if (state.showCategoryToImposter) {
-      clues.push(`<strong>Category:</strong> ${state.category}`);
+      clues.push(`<span class="highlight-clue">Category: ${state.category}</span>`);
     } else {
       clues.push(`<span class="danger-text">❌ Category hidden this round</span>`);
     }
 
     if (state.showHintToImposter) {
-      clues.push(`<strong>Hint:</strong> ${state.hint}`);
+      clues.push(`<span class="highlight-clue">Hint: ${state.hint}</span>`);
     } else {
       clues.push(`<span class="danger-text">❌ Hint not shown this round</span>`);
     }
@@ -218,7 +219,10 @@ function renderReveal() {
     roleDetails.innerHTML = clues.map((item) => `<li>${item}</li>`).join("");
   } else {
     roleHeadline.textContent = "You are a Crewmate";
-    const details = [`<strong>Word:</strong> ${state.word}`, "Keep this secret. Work together to find the Imposter."];
+    const details = [
+      `<span class="highlight-word">${state.word}</span>`,
+      "Keep this secret. Work together to find the Imposter.",
+    ];
     roleDetails.innerHTML = details.map((item) => `<li>${item}</li>`).join("");
   }
 

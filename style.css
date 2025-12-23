@@ -261,6 +261,12 @@ button:hover {
   min-height: 300px;
 }
 
+.imposter-card {
+  background: #2a0f1d;
+  border-color: #f43f5e;
+  box-shadow: 0 16px 36px rgba(244, 63, 94, 0.35);
+}
+
 .card h3 {
   margin: 0 0 8px;
 }
@@ -290,6 +296,18 @@ button:hover {
 
 .detail-list strong {
   color: var(--accent);
+}
+
+.highlight-word {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--accent-strong);
+}
+
+.highlight-clue {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fef3c7;
 }
 
 .role-imposter {
