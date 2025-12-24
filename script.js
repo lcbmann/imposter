@@ -416,6 +416,12 @@ const TRANSLATIONS = {
     roleTagCrewmate: "Crewmate",
     roleHeadlineImposter: "You are the Imposter",
     roleHeadlineCrewmate: "You are a Crewmate",
+    labelCategory: "Category",
+    labelHint: "Hint",
+    hiddenCategory: "❌ Category hidden this round",
+    hiddenHint: "❌ Hint not shown this round",
+    imposterGoal: "Blend in and figure out the secret word.",
+    crewmateGoal: "Keep this secret. Work together to find the Imposter.",
     hidePassButton: "Hide & pass",
     hideHint: "Tap or press space/enter to hide on mobile/desktop.",
     allRolesRevealed: "All roles revealed",
@@ -448,6 +454,12 @@ const TRANSLATIONS = {
     roleTagCrewmate: "Crew",
     roleHeadlineImposter: "Du bist der Imposter",
     roleHeadlineCrewmate: "Du bist Crew",
+    labelCategory: "Kategorie",
+    labelHint: "Hinweis",
+    hiddenCategory: "❌ Kategorie in dieser Runde verborgen",
+    hiddenHint: "❌ Hinweis in dieser Runde verborgen",
+    imposterGoal: "Mische dich ein und finde das geheime Wort.",
+    crewmateGoal: "Behalte das geheim. Finde gemeinsam den Imposter.",
     hidePassButton: "Verstecken & weitergeben",
     hideHint: "Tippen oder Leertaste/Enter zum Verstecken.",
     allRolesRevealed: "Alle Rollen gesehen",
@@ -480,6 +492,12 @@ const TRANSLATIONS = {
     roleTagCrewmate: "Crew",
     roleHeadlineImposter: "Ti si Imposter",
     roleHeadlineCrewmate: "Ti si Crew",
+    labelCategory: "Kategorija",
+    labelHint: "Hint",
+    hiddenCategory: "❌ Kategorija skrivena u ovoj rundi",
+    hiddenHint: "❌ Hint nije prikazan u ovoj rundi",
+    imposterGoal: "Uklopi se i otkrij tajnu riječ.",
+    crewmateGoal: "Drži to u tajnosti. Zajedno pronađite Impostera.",
     hidePassButton: "Sakrij & proslijedi",
     hideHint: "Dodirni ili pritisni razmak/enter za sakrivanje.",
     allRolesRevealed: "Sve uloge otkrivene",
@@ -731,25 +749,29 @@ function renderReveal() {
     roleHeadline.textContent = t("roleHeadlineImposter");
     const clues = [];
     if (state.showCategoryToImposter) {
-      clues.push(`<span class="highlight-clue">Category: ${state.category}</span>`);
+      clues.push(`<span class="highlight-clue">${t("labelCategory")}: ${state.category}</span>`);
     } else {
-      clues.push(`<span class="danger-text">❌ Category hidden this round</span>`);
+      clues.push(`<span class="danger-text">${t("hiddenCategory")}</span>`);
     }
 
     if (state.showHintToImposter) {
-      clues.push(`<span class="highlight-clue">Hint: ${state.hint}</span>`);
+      clues.push(`<span class="highlight-clue">${t("labelHint")}: ${state.hint}</span>`);
     } else {
-      clues.push(`<span class="danger-text">❌ Hint not shown this round</span>`);
+      clues.push(`<span class="danger-text">${t("hiddenHint")}</span>`);
     }
-    clues.push("Blend in and figure out the secret word.");
+    clues.push(t("imposterGoal"));
     roleDetails.innerHTML = clues.map((item) => `<li>${item}</li>`).join("");
   } else {
     roleHeadline.textContent = t("roleHeadlineCrewmate");
     const details = [
       `<span class="highlight-word">${state.word}</span>`,
-      ...(state.showCategoryToCrewmate ? [`<span class="highlight-clue">Category: ${state.category}</span>`] : []),
-      ...(state.showHintToCrewmate ? [`<span class="highlight-clue">Hint: ${state.hint}</span>`] : []),
-      "Keep this secret. Work together to find the Imposter.",
+      ...(state.showCategoryToCrewmate
+        ? [`<span class="highlight-clue">${t("labelCategory")}: ${state.category}</span>`]
+        : []),
+      ...(state.showHintToCrewmate
+        ? [`<span class="highlight-clue">${t("labelHint")}: ${state.hint}</span>`]
+        : []),
+      t("crewmateGoal"),
     ];
     roleDetails.innerHTML = details.map((item) => `<li>${item}</li>`).join("");
   }
