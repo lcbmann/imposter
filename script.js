@@ -6,6 +6,7 @@ const hintToggle = document.getElementById("hintToggle");
 const crewCategoryToggle = document.getElementById("crewCategoryToggle");
 const crewHintToggle = document.getElementById("crewHintToggle");
 const autoStarterToggle = document.getElementById("autoStarterToggle");
+const customCategoryToggle = document.getElementById("customCategoryToggle");
 const resetWordsButton = document.getElementById("resetWords");
 const startRoundButton = document.getElementById("startRound");
 const revealButton = document.getElementById("revealButton");
@@ -367,6 +368,36 @@ const WORD_BANK = {
   },
 };
 
+const CUSTOM_CATEGORIES = {
+  CSGO: [
+    { word: "Dust II", hint: "Mid" },
+    { word: "Mirage", hint: "Window" },
+    { word: "Inferno", hint: "Banana" },
+    { word: "Nuke", hint: "Silo" },
+    { word: "Overpass", hint: "Connector" },
+    { word: "Ancient", hint: "Temple" },
+    { word: "Cache", hint: "Main" },
+    { word: "Train", hint: "Yard" },
+    { word: "Cobblestone", hint: "Drop" },
+    { word: "Vertigo", hint: "Ramp" },
+    { word: "AWP", hint: "Scope" },
+    { word: "AK-47", hint: "Tap" },
+    { word: "M4A1-S", hint: "Silence" },
+    { word: "Desert Eagle", hint: "One-tap" },
+    { word: "Glock", hint: "Pistol" },
+    { word: "Kevlar", hint: "Armor" },
+    { word: "Defuse Kit", hint: "Wire" },
+    { word: "Flashbang", hint: "Blind" },
+    { word: "Smoke", hint: "Cloud" },
+    { word: "Molotov", hint: "Fire" },
+    { word: "s1mple", hint: "Star" },
+    { word: "ZywOo", hint: "Ace" },
+    { word: "device", hint: "Clutch" },
+    { word: "NiKo", hint: "Aim" },
+    { word: "B Site", hint: "Plant" },
+  ],
+};
+
 const TRANSLATIONS = {
   en: {
     step2Label: "Step 2",
@@ -479,6 +510,7 @@ const state = {
   showCategoryToCrewmate: false,
   showHintToCrewmate: false,
   autoPickStarter: false,
+  customCategoriesEnabled: false,
   roundReady: false,
 };
 
@@ -546,7 +578,12 @@ function initCategoryOptions() {
   randomOption.textContent = "Random category";
   fragment.appendChild(randomOption);
 
-  Object.keys(WORD_BANK[state.language]).forEach((category) => {
+  const categories = [
+    ...Object.keys(WORD_BANK[state.language]),
+    ...(state.customCategoriesEnabled ? Object.keys(CUSTOM_CATEGORIES) : []),
+  ];
+
+  categories.forEach((category) => {
     const option = document.createElement("option");
     option.value = category;
     option.textContent = category;
@@ -563,14 +600,18 @@ function randomItem(list) {
 function pickCategory() {
   const choice = categorySelect.value;
   if (choice === "random") {
-    return randomItem(Object.keys(WORD_BANK[state.language]));
+    const categories = [
+      ...Object.keys(WORD_BANK[state.language]),
+      ...(state.customCategoriesEnabled ? Object.keys(CUSTOM_CATEGORIES) : []),
+    ];
+    return randomItem(categories);
   }
   return choice;
 }
 
 function pickWord(category, language) {
   const usedWords = loadUsedWords(language);
-  const pool = WORD_BANK[language][category];
+  const pool = CUSTOM_CATEGORIES[category] || WORD_BANK[language][category];
   let available = pool.filter((item) => !usedWords.has(item.word));
   if (available.length === 0) {
     resetUsedWords(language, true);
@@ -642,6 +683,7 @@ function startRound({ reuseWord = false } = {}) {
   state.showCategoryToCrewmate = crewCategoryToggle.checked;
   state.showHintToCrewmate = crewHintToggle.checked;
   state.autoPickStarter = autoStarterToggle.checked;
+  state.customCategoriesEnabled = customCategoryToggle.checked;
   state.roundReady = true;
   state.imposterIndex = Math.floor(Math.random() * playerCount) + 1;
 
@@ -659,7 +701,7 @@ function startRound({ reuseWord = false } = {}) {
   toggleViews({ hidden: true });
   showRevealPanel();
   console.log(
-    `[Debug] New round started — players: ${playerCount}, language: ${state.language}, imposter: ${state.imposterIndex}, category: ${state.category}, word: ${state.word}, categoryClue: ${state.showCategoryToImposter}, hintClue: ${state.showHintToImposter}, crewCategory: ${state.showCategoryToCrewmate}, crewHint: ${state.showHintToCrewmate}, autoStarter: ${state.autoPickStarter}`
+    `[Debug] New round started — players: ${playerCount}, language: ${state.language}, imposter: ${state.imposterIndex}, category: ${state.category}, word: ${state.word}, categoryClue: ${state.showCategoryToImposter}, hintClue: ${state.showHintToImposter}, crewCategory: ${state.showCategoryToCrewmate}, crewHint: ${state.showHintToCrewmate}, autoStarter: ${state.autoPickStarter}, customCategories: ${state.customCategoriesEnabled}`
   );
 }
 
@@ -783,10 +825,16 @@ function attachHandlers() {
     applyTranslations();
     console.log(`[Debug] Language changed to ${state.language} and word pool refreshed.`);
   });
+  customCategoryToggle.addEventListener("change", () => {
+    state.customCategoriesEnabled = customCategoryToggle.checked;
+    initCategoryOptions();
+    console.log(`[Debug] Custom categories enabled: ${state.customCategoriesEnabled}`);
+  });
 }
 
 function init() {
   state.language = languageSelect.value;
+  state.customCategoriesEnabled = customCategoryToggle.checked;
   initCategoryOptions();
   attachHandlers();
   applyTranslations();
