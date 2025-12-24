@@ -367,6 +367,105 @@ const WORD_BANK = {
   },
 };
 
+const TRANSLATIONS = {
+  en: {
+    step2Label: "Step 2",
+    revealRolesTitle: "Reveal roles",
+    editSetup: "Edit setup",
+    statusWaiting: "Waiting to start",
+    statusInProgress: "Round in progress",
+    statusReadyVote: "Ready to vote",
+    passPhone: "Pass the phone",
+    playerTurn: "Player {num}, your turn",
+    tapToRevealPrompt: "Tap below when you’re ready to see your role.",
+    tapToRevealButton: "Tap to reveal",
+    landscapeTip: "Tip: Use landscape for bigger tap targets.",
+    roleLabel: "Role",
+    roleTagImposter: "Imposter",
+    roleTagCrewmate: "Crewmate",
+    roleHeadlineImposter: "You are the Imposter",
+    roleHeadlineCrewmate: "You are a Crewmate",
+    hidePassButton: "Hide & pass",
+    hideHint: "Tap or press space/enter to hide on mobile/desktop.",
+    allRolesRevealed: "All roles revealed",
+    discussVote: "Discuss, then vote out the Imposter.",
+    freshWordPrompt: "Need a fresh word? Start another round.",
+    startAnotherRound: "Start another round",
+    reuseWord: "Reuse word, reshuffle roles",
+    pickStarter: "Pick starting player",
+    starterResult: "Player {num} starts the talking this round.",
+    messagePlayerCount: "Player count must be between 3 and 8.",
+    messageStartRoundFirst: "Start a round first.",
+    messagePoolReset: "All words used for this language. Pool reset automatically.",
+    messageManualReset: "Word pool reset for this language.",
+    messageLanguageSwitch: "Language switched. Word pool refreshed for this language.",
+  },
+  de: {
+    step2Label: "Schritt 2",
+    revealRolesTitle: "Rollen zeigen",
+    editSetup: "Einstellungen",
+    statusWaiting: "Bereit zum Start",
+    statusInProgress: "Runde läuft",
+    statusReadyVote: "Bereit zum Wählen",
+    passPhone: "Handy weitergeben",
+    playerTurn: "Spieler {num}, du bist dran",
+    tapToRevealPrompt: "Tippe unten, um deine Rolle zu sehen.",
+    tapToRevealButton: "Tippen zum Aufdecken",
+    landscapeTip: "Tipp: Querformat für größere Buttons.",
+    roleLabel: "Rolle",
+    roleTagImposter: "Imposter",
+    roleTagCrewmate: "Crew",
+    roleHeadlineImposter: "Du bist der Imposter",
+    roleHeadlineCrewmate: "Du bist Crew",
+    hidePassButton: "Verstecken & weitergeben",
+    hideHint: "Tippen oder Leertaste/Enter zum Verstecken.",
+    allRolesRevealed: "Alle Rollen gesehen",
+    discussVote: "Diskutiert und wählt den Imposter.",
+    freshWordPrompt: "Neues Wort? Starte eine neue Runde.",
+    startAnotherRound: "Neue Runde starten",
+    reuseWord: "Wort behalten, Rollen neu",
+    pickStarter: "Startspieler wählen",
+    starterResult: "Spieler {num} beginnt die Runde.",
+    messagePlayerCount: "Spielerzahl muss zwischen 3 und 8 liegen.",
+    messageStartRoundFirst: "Bitte zuerst eine Runde starten.",
+    messagePoolReset: "Alle Wörter genutzt. Pool automatisch zurückgesetzt.",
+    messageManualReset: "Wort-Pool für diese Sprache zurückgesetzt.",
+    messageLanguageSwitch: "Sprache gewechselt. Wort-Pool aktualisiert.",
+  },
+  hr: {
+    step2Label: "Korak 2",
+    revealRolesTitle: "Otkrij uloge",
+    editSetup: "Postavke",
+    statusWaiting: "Spremno za start",
+    statusInProgress: "Runda traje",
+    statusReadyVote: "Spremno za glasanje",
+    passPhone: "Proslijedi mobitel",
+    playerTurn: "Igrač {num}, tvoj red",
+    tapToRevealPrompt: "Dodirni ispod da vidiš ulogu.",
+    tapToRevealButton: "Dodirni za otkrivanje",
+    landscapeTip: "Savjet: Okreni ekran za veće tipke.",
+    roleLabel: "Uloga",
+    roleTagImposter: "Imposter",
+    roleTagCrewmate: "Crew",
+    roleHeadlineImposter: "Ti si Imposter",
+    roleHeadlineCrewmate: "Ti si Crew",
+    hidePassButton: "Sakrij & proslijedi",
+    hideHint: "Dodirni ili pritisni razmak/enter za sakrivanje.",
+    allRolesRevealed: "Sve uloge otkrivene",
+    discussVote: "Raspravite i izglasajte Impostera.",
+    freshWordPrompt: "Treba novo? Pokreni novu rundu.",
+    startAnotherRound: "Nova runda",
+    reuseWord: "Isto riječ, nove uloge",
+    pickStarter: "Odaberi početnog igrača",
+    starterResult: "Igrač {num} prvi govori u rundi.",
+    messagePlayerCount: "Broj igrača mora biti između 3 i 8.",
+    messageStartRoundFirst: "Prvo pokreni rundu.",
+    messagePoolReset: "Sve riječi iskorištene. Pool resetiran.",
+    messageManualReset: "Pool riječi resetiran za ovaj jezik.",
+    messageLanguageSwitch: "Jezik promijenjen. Pool osvježen.",
+  },
+};
+
 const state = {
   playerCount: 6,
   currentPlayer: 1,
@@ -385,6 +484,27 @@ const state = {
 
 function storageKeyForLanguage(lang) {
   return `imposter_used_words_${lang}`;
+}
+
+function t(key, vars = {}) {
+  const language = state.language || "en";
+  const table = TRANSLATIONS[language] || TRANSLATIONS.en;
+  const template = table[key] || TRANSLATIONS.en[key] || key;
+  return Object.entries(vars).reduce(
+    (text, [varKey, value]) => text.replaceAll(`{${varKey}}`, value),
+    template
+  );
+}
+
+function applyTranslations() {
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    const key = element.dataset.i18n;
+    if (key) {
+      element.textContent = t(key);
+    }
+  });
+  updateStatus(state.roundReady ? t("statusInProgress") : t("statusWaiting"));
+  syncHiddenView();
 }
 
 function loadUsedWords(lang) {
@@ -411,7 +531,7 @@ function resetUsedWords(lang, silent = false) {
   try {
     localStorage.removeItem(storageKeyForLanguage(lang));
     if (!silent) {
-      setMessage("Word pool reset for this language.", false);
+      setMessage(t("messageManualReset"), false);
     }
   } catch (error) {
     console.log("[Debug] Failed to reset used words:", error);
@@ -454,7 +574,7 @@ function pickWord(category, language) {
   let available = pool.filter((item) => !usedWords.has(item.word));
   if (available.length === 0) {
     resetUsedWords(language, true);
-    setMessage("All words used for this language. Pool reset automatically.", false);
+    setMessage(t("messagePoolReset"), false);
     available = pool.slice();
     usedWords.clear();
   }
@@ -487,7 +607,7 @@ function showSetupPanel() {
   revealPanel.setAttribute("aria-hidden", "true");
   revealPanel.hidden = true;
   appHeader.classList.remove("header-hidden");
-  updateStatus("Waiting to start");
+  updateStatus(t("statusWaiting"));
   toggleViews({ hidden: true });
   state.roundReady = false;
   state.currentPlayer = 1;
@@ -509,7 +629,7 @@ function showRevealPanel() {
 function startRound({ reuseWord = false } = {}) {
   const playerCount = Number(playerCountInput.value);
   if (Number.isNaN(playerCount) || playerCount < 3 || playerCount > 8) {
-    setMessage("Player count must be between 3 and 8.", true);
+    setMessage(t("messagePlayerCount"), true);
     console.log("[Debug] Invalid player count entered:", playerCount);
     return;
   }
@@ -534,7 +654,7 @@ function startRound({ reuseWord = false } = {}) {
   }
 
   setMessage("");
-  updateStatus("Round in progress");
+  updateStatus(t("statusInProgress"));
   syncHiddenView();
   toggleViews({ hidden: true });
   showRevealPanel();
@@ -548,7 +668,7 @@ function updateStatus(label) {
 }
 
 function syncHiddenView() {
-  playerPrompt.textContent = `Player ${state.currentPlayer}, your turn`;
+  playerPrompt.textContent = t("playerTurn", { num: state.currentPlayer });
 }
 
 function toggleViews({ hidden = false, revealed = false, complete = false }) {
@@ -559,14 +679,14 @@ function toggleViews({ hidden = false, revealed = false, complete = false }) {
 
 function renderReveal() {
   const isImposter = state.currentPlayer === state.imposterIndex;
-  roleTag.textContent = isImposter ? "Imposter" : "Crewmate";
+  roleTag.textContent = isImposter ? t("roleTagImposter") : t("roleTagCrewmate");
   roleTag.classList.toggle("role-imposter", isImposter);
   roleTag.classList.toggle("role-crewmate", !isImposter);
   roleTag.classList.add("role-badge");
   revealView.classList.toggle("imposter-card", isImposter);
 
   if (isImposter) {
-    roleHeadline.textContent = "You are the Imposter";
+    roleHeadline.textContent = t("roleHeadlineImposter");
     const clues = [];
     if (state.showCategoryToImposter) {
       clues.push(`<span class="highlight-clue">Category: ${state.category}</span>`);
@@ -582,7 +702,7 @@ function renderReveal() {
     clues.push("Blend in and figure out the secret word.");
     roleDetails.innerHTML = clues.map((item) => `<li>${item}</li>`).join("");
   } else {
-    roleHeadline.textContent = "You are a Crewmate";
+    roleHeadline.textContent = t("roleHeadlineCrewmate");
     const details = [
       `<span class="highlight-word">${state.word}</span>`,
       ...(state.showCategoryToCrewmate ? [`<span class="highlight-clue">Category: ${state.category}</span>`] : []),
@@ -601,7 +721,7 @@ function renderReveal() {
 
 function revealRole() {
   if (!state.roundReady) {
-    setMessage("Start a round first.", true);
+    setMessage(t("messageStartRoundFirst"), true);
     console.log("[Debug] Reveal blocked — round has not been started.");
     return;
   }
@@ -612,7 +732,7 @@ function revealRole() {
 function hideRole() {
   if (state.currentPlayer >= state.playerCount) {
     toggleViews({ complete: true });
-    updateStatus("Ready to vote");
+    updateStatus(t("statusReadyVote"));
     if (state.autoPickStarter) {
       pickStartingPlayer();
     }
@@ -639,7 +759,7 @@ function reshuffleRoles() {
 
 function pickStartingPlayer() {
   const starter = Math.floor(Math.random() * state.playerCount) + 1;
-  starterResult.textContent = `Player ${starter} starts the talking this round.`;
+  starterResult.textContent = t("starterResult", { num: starter });
   console.log(`[Debug] Starter selected: Player ${starter}`);
 }
 
@@ -659,15 +779,17 @@ function attachHandlers() {
     state.language = languageSelect.value;
     initCategoryOptions();
     resetUsedWords(state.language, true);
-    setMessage("Language switched. Word pool refreshed for this language.", false);
+    setMessage(t("messageLanguageSwitch"), false);
+    applyTranslations();
     console.log(`[Debug] Language changed to ${state.language} and word pool refreshed.`);
   });
 }
 
 function init() {
+  state.language = languageSelect.value;
   initCategoryOptions();
   attachHandlers();
-  updateStatus("Waiting to start");
+  applyTranslations();
   syncHiddenView();
 }
 
