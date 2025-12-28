@@ -5,6 +5,7 @@ const categoryToggle = document.getElementById("categoryToggle");
 const hintToggle = document.getElementById("hintToggle");
 const crewCategoryToggle = document.getElementById("crewCategoryToggle");
 const crewHintToggle = document.getElementById("crewHintToggle");
+const imposterCountInput = document.getElementById("imposterCount");
 const autoStarterToggle = document.getElementById("autoStarterToggle");
 const customCategoryToggle = document.getElementById("customCategoryToggle");
 const resetWordsButton = document.getElementById("resetWords");
@@ -436,6 +437,7 @@ const TRANSLATIONS = {
     messagePoolReset: "All words used for this language. Pool reset automatically.",
     messageManualReset: "Word pool reset for this language.",
     messageLanguageSwitch: "Language switched. Word pool refreshed for this language.",
+    messageImposterCount: "Imposter count must be between 1 and players minus 1.",
   },
   de: {
     step2Label: "Schritt 2",
@@ -474,6 +476,7 @@ const TRANSLATIONS = {
     messagePoolReset: "Alle Wörter genutzt. Pool automatisch zurückgesetzt.",
     messageManualReset: "Wort-Pool für diese Sprache zurückgesetzt.",
     messageLanguageSwitch: "Sprache gewechselt. Wort-Pool aktualisiert.",
+    messageImposterCount: "Anzahl der Imposter muss kleiner als die Spielerzahl sein.",
   },
   hr: {
     step2Label: "Korak 2",
@@ -512,13 +515,14 @@ const TRANSLATIONS = {
     messagePoolReset: "Sve riječi iskorištene. Pool resetiran.",
     messageManualReset: "Pool riječi resetiran za ovaj jezik.",
     messageLanguageSwitch: "Jezik promijenjen. Pool osvježen.",
+    messageImposterCount: "Broj Impostera mora biti manji od broja igrača.",
   },
 };
 
 const state = {
   playerCount: 6,
   currentPlayer: 1,
-  imposterIndex: 1,
+  imposterIndices: [],
   category: "",
   word: "",
   hint: "",
@@ -611,6 +615,14 @@ function initCategoryOptions() {
   categorySelect.appendChild(fragment);
 }
 
+function pickImposters(playerCount, imposterCount) {
+  const indices = new Set();
+  while (indices.size < imposterCount) {
+    indices.add(Math.floor(Math.random() * playerCount) + 1);
+  }
+  return Array.from(indices);
+}
+
 function randomItem(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -687,15 +699,26 @@ function showRevealPanel() {
 
 function startRound({ reuseWord = false } = {}) {
   const playerCount = Number(playerCountInput.value);
-  if (Number.isNaN(playerCount) || playerCount < 3 || playerCount > 8) {
+  if (Number.isNaN(playerCount) || playerCount < 3 || playerCount > 12) {
     setMessage(t("messagePlayerCount"), true);
     console.log("[Debug] Invalid player count entered:", playerCount);
+    return;
+  }
+  const imposterCount = Number(imposterCountInput.value);
+  if (
+    Number.isNaN(imposterCount) ||
+    imposterCount < 1 ||
+    imposterCount >= playerCount
+  ) {
+    setMessage(t("messageImposterCount"), true);
+    console.log("[Debug] Invalid imposter count entered:", imposterCount);
     return;
   }
 
   state.playerCount = playerCount;
   state.currentPlayer = 1;
   state.language = languageSelect.value;
+  state.imposterIndices = pickImposters(playerCount, imposterCount);
   state.showCategoryToImposter = categoryToggle.checked;
   state.showHintToImposter = hintToggle.checked;
   state.showCategoryToCrewmate = crewCategoryToggle.checked;
@@ -703,8 +726,6 @@ function startRound({ reuseWord = false } = {}) {
   state.autoPickStarter = autoStarterToggle.checked;
   state.customCategoriesEnabled = customCategoryToggle.checked;
   state.roundReady = true;
-  state.imposterIndex = Math.floor(Math.random() * playerCount) + 1;
-
   if (!reuseWord) {
     const category = pickCategory();
     const selection = pickWord(category, state.language);
@@ -719,7 +740,7 @@ function startRound({ reuseWord = false } = {}) {
   toggleViews({ hidden: true });
   showRevealPanel();
   console.log(
-    `[Debug] New round started — players: ${playerCount}, language: ${state.language}, imposter: ${state.imposterIndex}, category: ${state.category}, word: ${state.word}, categoryClue: ${state.showCategoryToImposter}, hintClue: ${state.showHintToImposter}, crewCategory: ${state.showCategoryToCrewmate}, crewHint: ${state.showHintToCrewmate}, autoStarter: ${state.autoPickStarter}, customCategories: ${state.customCategoriesEnabled}`
+    `[Debug] New round started — players: ${playerCount}, language: ${state.language}, imposters: ${state.imposterIndices.join(",")}, category: ${state.category}, word: ${state.word}, categoryClue: ${state.showCategoryToImposter}, hintClue: ${state.showHintToImposter}, crewCategory: ${state.showCategoryToCrewmate}, crewHint: ${state.showHintToCrewmate}, autoStarter: ${state.autoPickStarter}, customCategories: ${state.customCategoriesEnabled}`
   );
 }
 
@@ -738,7 +759,7 @@ function toggleViews({ hidden = false, revealed = false, complete = false }) {
 }
 
 function renderReveal() {
-  const isImposter = state.currentPlayer === state.imposterIndex;
+  const isImposter = state.imposterIndices.includes(state.currentPlayer);
   roleTag.textContent = isImposter ? t("roleTagImposter") : t("roleTagCrewmate");
   roleTag.classList.toggle("role-imposter", isImposter);
   roleTag.classList.toggle("role-crewmate", !isImposter);
@@ -810,14 +831,14 @@ function hideRole() {
 }
 
 function reshuffleRoles() {
-  state.imposterIndex = Math.floor(Math.random() * state.playerCount) + 1;
+  state.imposterIndices = pickImposters(state.playerCount, Number(imposterCountInput.value));
   state.currentPlayer = 1;
   state.roundReady = true;
   syncHiddenView();
   toggleViews({ hidden: true });
   updateStatus("Round in progress");
   console.log(
-    `[Debug] Roles reshuffled — new imposter: ${state.imposterIndex}, word unchanged (${state.word}).`
+    `[Debug] Roles reshuffled — new imposters: ${state.imposterIndices.join(",")}, word unchanged (${state.word}).`
   );
 }
 
@@ -851,6 +872,9 @@ function attachHandlers() {
     state.customCategoriesEnabled = customCategoryToggle.checked;
     initCategoryOptions();
     console.log(`[Debug] Custom categories enabled: ${state.customCategoriesEnabled}`);
+  });
+  imposterCountInput.addEventListener("change", () => {
+    console.log(`[Debug] Imposter count set to ${imposterCountInput.value}`);
   });
 }
 

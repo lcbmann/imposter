@@ -38,8 +38,8 @@
         <div class="form">
           <label class="field">
             <span>Number of players</span>
-            <input id="playerCount" type="number" min="3" max="8" value="6" />
-            <small>Must be between 3 and 8.</small>
+            <input id="playerCount" type="number" min="3" max="12" value="6" />
+            <small>Must be between 3 and 12.</small>
           </label>
 
           <label class="field">
@@ -86,6 +86,11 @@
 
           <div class="field toggles">
             <p class="eyebrow muted">Round options</p>
+            <label class="toggle">
+              <span>Number of Imposters</span>
+              <input id="imposterCount" type="number" min="1" max="3" value="1" />
+            </label>
+            <small>Set to 2-3 for larger groups.</small>
             <label class="toggle">
               <input type="checkbox" id="autoStarterToggle" />
               <span>Auto-pick who talks first after reveals</span>
