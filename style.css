@@ -134,7 +134,7 @@ body.mode-game .app-main {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: 14px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -385,15 +385,15 @@ button:hover {
 }
 
 .round-container {
-  margin-top: 14px;
+  margin-top: 18px;
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .card {
   border: 1px solid #27416a;
   border-radius: 14px;
-  padding: 14px;
+  padding: 16px;
   background: var(--panel);
 }
 
@@ -409,9 +409,9 @@ button:hover {
 .detail-list {
   list-style: none;
   padding: 0;
-  margin: 10px 0;
+  margin: 12px 0 14px;
   display: grid;
-  gap: 7px;
+  gap: 9px;
 }
 
 .instruction-list {
@@ -427,7 +427,7 @@ button:hover {
 }
 
 .detail-list li {
-  padding: 10px 11px;
+  padding: 12px 13px;
   border: 1px solid #35598b;
   border-radius: 10px;
   background: #0b1730;
@@ -443,6 +443,29 @@ button:hover {
 
 .role-crewmate {
   color: var(--accent);
+}
+
+#revealView #roleTag {
+  margin-bottom: 6px;
+}
+
+#revealView #roleHeadline {
+  margin-bottom: 8px;
+}
+
+#revealView > .muted {
+  margin-top: 2px;
+  margin-bottom: 12px;
+  line-height: 1.35;
+}
+
+#hiddenView #playerPrompt {
+  margin-bottom: 8px;
+}
+
+#hiddenView .instruction-list {
+  margin-top: 8px;
+  margin-bottom: 14px;
 }
 
 .is-hidden {
