@@ -1,4 +1,4 @@
-const APP_VERSION = "v2.0.0";
+const APP_VERSION = "v2.1.0";
 const CUSTOM_CATEGORY_STORAGE_KEY = "imposter.customCategories.v2";
 const USED_WORDS_STORAGE_KEY = "imposter.usedWords.v2";
 const SAME_PLAYER_WEIGHT = 0.5;
@@ -8,9 +8,6 @@ const playerCountInput = document.getElementById("playerCount");
 const imposterCountInput = document.getElementById("imposterCount");
 const categoryToggle = document.getElementById("categoryToggle");
 const hintToggle = document.getElementById("hintToggle");
-const crewCategoryToggle = document.getElementById("crewCategoryToggle");
-const crewHintToggle = document.getElementById("crewHintToggle");
-const autoStarterToggle = document.getElementById("autoStarterToggle");
 const customCategoryToggle = document.getElementById("customCategoryToggle");
 const resetWordsButton = document.getElementById("resetWords");
 const startRoundButton = document.getElementById("startRound");
@@ -29,7 +26,6 @@ const roleHeadline = document.getElementById("roleHeadline");
 const roleDetails = document.getElementById("roleDetails");
 const roleTag = document.getElementById("roleTag");
 const roundStatus = document.getElementById("roundStatus");
-const starterAnnouncement = document.getElementById("starterAnnouncement");
 const setupMessage = document.getElementById("setupMessage");
 const appVersionLabel = document.getElementById("appVersion");
 const customCategorySection = document.getElementById("customCategorySection");
@@ -83,6 +79,14 @@ const BUILT_IN_CATEGORIES = {
     { word: "Sequel", hint: "Next installment" },
     { word: "Premiere", hint: "First public screening" },
   ],
+  "CS:GO": [
+    { word: "Dust2", hint: "Classic map" },
+    { word: "AWP", hint: "Sniper rifle" },
+    { word: "Clutch", hint: "Winning alone" },
+    { word: "Eco", hint: "Low-money round" },
+    { word: "Bombsite", hint: "Plant location" },
+    { word: "Flashbang", hint: "Temporary blind grenade" },
+  ],
 };
 
 const state = {
@@ -95,10 +99,6 @@ const state = {
   hint: "",
   showCategoryToImposter: true,
   showHintToImposter: false,
-  showCategoryToCrewmate: true,
-  showHintToCrewmate: true,
-  autoStarter: false,
-  starterPlayer: null,
   roundReady: false,
   customCategoryEnabled: true,
   customCategories: loadCustomCategories(),
@@ -230,9 +230,11 @@ function loadUsedWords() {
       if (!Array.isArray(words)) {
         return;
       }
+
       const uniqueWords = Array.from(
         new Set(words.map((word) => normalizeText(word).toLowerCase()).filter(Boolean))
       );
+
       if (uniqueWords.length > 0) {
         normalized[normalizeText(categoryKey).toLowerCase()] = uniqueWords;
       }
@@ -346,13 +348,53 @@ function syncImposterCountBounds() {
   }
 }
 
+function tokenizeByDelimitersWithQuotes(rawText) {
+  const tokens = [];
+  let currentToken = "";
+  let quoteChar = "";
+
+  for (const char of String(rawText || "")) {
+    const isQuote = char === '"' || char === "'";
+    const isDelimiter = /[\s,;]+/.test(char);
+
+    if (isQuote) {
+      if (!quoteChar) {
+        quoteChar = char;
+        continue;
+      }
+      if (quoteChar === char) {
+        quoteChar = "";
+        continue;
+      }
+    }
+
+    if (!quoteChar && isDelimiter) {
+      const cleaned = normalizeText(currentToken);
+      if (cleaned) {
+        tokens.push(cleaned);
+      }
+      currentToken = "";
+      continue;
+    }
+
+    currentToken += char;
+  }
+
+  const trailing = normalizeText(currentToken);
+  if (trailing) {
+    tokens.push(trailing);
+  }
+
+  return tokens;
+}
+
 function parseEntryToken(token) {
   const trimmed = normalizeText(token);
   if (!trimmed) {
     return null;
   }
 
-  const separators = ["|", "=>", ":"];
+  const separators = ["|", "=>"];
   for (const separator of separators) {
     const separatorIndex = trimmed.indexOf(separator);
     if (separatorIndex > 0) {
@@ -367,8 +409,7 @@ function parseEntryToken(token) {
 }
 
 function parseEntriesFromRaw(rawText) {
-  return normalizeText(rawText)
-    .split(/[\n,;]+/)
+  return tokenizeByDelimitersWithQuotes(rawText)
     .map((token) => parseEntryToken(token))
     .filter(Boolean);
 }
@@ -473,8 +514,7 @@ function updateCustomCategoryVisibility() {
   customCategorySection.classList.toggle("is-hidden", !state.customCategoryEnabled);
   customCategoryDisabledNote.classList.toggle("is-hidden", state.customCategoryEnabled);
 
-  const selected = categorySelect.value;
-  refreshCategoryOptions(selected);
+  refreshCategoryOptions(categorySelect.value);
 }
 
 function pickCategory() {
@@ -569,21 +609,15 @@ function toggleRoundCards({ hidden = false, revealed = false, complete = false }
 }
 
 function showSetupScreen() {
+  document.body.classList.remove("mode-game");
   setupScreen.classList.remove("is-hidden");
   gameScreen.classList.add("is-hidden");
 }
 
 function showGameScreen() {
+  document.body.classList.add("mode-game");
   setupScreen.classList.add("is-hidden");
   gameScreen.classList.remove("is-hidden");
-}
-
-function renderCompleteView() {
-  if (state.autoStarter && Number.isInteger(state.starterPlayer)) {
-    starterAnnouncement.textContent = `Player ${state.starterPlayer} starts the discussion.`;
-  } else {
-    starterAnnouncement.textContent = "Everyone has their role. Start discussing.";
-  }
 }
 
 function renderReveal() {
@@ -595,6 +629,8 @@ function renderReveal() {
   if (isImposter) {
     roleHeadline.textContent = "You are the Imposter";
     const clues = [];
+
+    clues.push("<strong>Your objective:</strong> blend in without knowing the word.");
 
     if (state.showCategoryToImposter) {
       clues.push(`<strong>Category:</strong> ${escapeHtml(state.category)}`);
@@ -608,27 +644,15 @@ function renderReveal() {
       clues.push("<strong>Hint:</strong> Hidden this round");
     }
 
-    clues.push("Blend in and identify the secret word.");
     roleDetails.innerHTML = clues.map((item) => `<li>${item}</li>`).join("");
     return;
   }
 
   roleHeadline.textContent = "You are a Crewmate";
-  const details = [`<strong>Word:</strong> ${escapeHtml(state.word)}`];
-
-  if (state.showCategoryToCrewmate) {
-    details.push(`<strong>Category:</strong> ${escapeHtml(state.category)}`);
-  } else {
-    details.push("<strong>Category:</strong> Hidden this round");
-  }
-
-  if (state.showHintToCrewmate) {
-    details.push(`<strong>Hint:</strong> ${escapeHtml(state.hint)}`);
-  } else {
-    details.push("<strong>Hint:</strong> Hidden this round");
-  }
-
-  roleDetails.innerHTML = details.map((item) => `<li>${item}</li>`).join("");
+  roleDetails.innerHTML = [
+    `<li><strong>Secret word:</strong> ${escapeHtml(state.word)}</li>`,
+    "<li><strong>Your objective:</strong> expose the imposter without saying the exact word.</li>",
+  ].join("");
 }
 
 function startRound({ reuseWord = false } = {}) {
@@ -645,18 +669,15 @@ function startRound({ reuseWord = false } = {}) {
     return;
   }
 
+  const shouldReuseWord = reuseWord && state.word && state.category;
   const previousImposters = state.imposterIndices.slice();
   state.playerCount = playerCount;
   state.imposterCount = imposterCount;
   state.currentPlayer = 1;
   state.showCategoryToImposter = categoryToggle.checked;
   state.showHintToImposter = hintToggle.checked;
-  state.showCategoryToCrewmate = crewCategoryToggle.checked;
-  state.showHintToCrewmate = crewHintToggle.checked;
-  state.autoStarter = autoStarterToggle.checked;
-  state.roundReady = true;
 
-  if (!reuseWord) {
+  if (!shouldReuseWord) {
     const pickedCategory = pickCategory();
     if (!pickedCategory) {
       setMessage("No categories available. Enable categories and try again.", true);
@@ -675,7 +696,7 @@ function startRound({ reuseWord = false } = {}) {
   }
 
   state.imposterIndices = pickImposterIndices(playerCount, imposterCount, previousImposters);
-  state.starterPlayer = state.autoStarter ? Math.floor(Math.random() * playerCount) + 1 : null;
+  state.roundReady = true;
 
   setMessage("");
   updateStatus("Round in progress");
@@ -684,8 +705,7 @@ function startRound({ reuseWord = false } = {}) {
   showGameScreen();
 
   console.log(
-    `[Debug] Round started - players: ${playerCount}, imposters: ${state.imposterIndices.join(","
-    )}, category: ${state.category}, word: ${state.word}`
+    `[Debug] Round started - players: ${playerCount}, imposters: ${state.imposterIndices.join(",")}, category: ${state.category}, word: ${state.word}`
   );
 }
 
@@ -702,8 +722,7 @@ function revealRole() {
 function hideRole() {
   if (state.currentPlayer >= state.playerCount) {
     toggleRoundCards({ complete: true });
-    updateStatus("Ready to discuss");
-    renderCompleteView();
+    updateStatus("Vote time");
     return;
   }
 

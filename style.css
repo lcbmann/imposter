@@ -113,6 +113,14 @@ h3 {
   margin-top: 16px;
 }
 
+body.mode-game .app-header {
+  display: none;
+}
+
+body.mode-game .app-main {
+  margin-top: 0;
+}
+
 .screen {
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -404,6 +412,18 @@ button:hover {
   margin: 10px 0;
   display: grid;
   gap: 7px;
+}
+
+.instruction-list {
+  margin: 10px 0 12px;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.instruction-list li {
+  line-height: 1.35;
 }
 
 .detail-list li {
