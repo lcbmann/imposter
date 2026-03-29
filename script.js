@@ -1,12 +1,26 @@
+const APP_VERSION = "v2.0.0";
+const CUSTOM_CATEGORY_STORAGE_KEY = "imposter.customCategories.v2";
+const USED_WORDS_STORAGE_KEY = "imposter.usedWords.v2";
+const SAME_PLAYER_WEIGHT = 0.5;
+
 const categorySelect = document.getElementById("categorySelect");
 const playerCountInput = document.getElementById("playerCount");
+const imposterCountInput = document.getElementById("imposterCount");
 const categoryToggle = document.getElementById("categoryToggle");
 const hintToggle = document.getElementById("hintToggle");
+const crewCategoryToggle = document.getElementById("crewCategoryToggle");
+const crewHintToggle = document.getElementById("crewHintToggle");
+const autoStarterToggle = document.getElementById("autoStarterToggle");
+const customCategoryToggle = document.getElementById("customCategoryToggle");
+const resetWordsButton = document.getElementById("resetWords");
 const startRoundButton = document.getElementById("startRound");
-const revealButton = document.getElementById("revealButton");
-const hideButton = document.getElementById("hideButton");
 const restartRoundButton = document.getElementById("restartRound");
 const reshuffleRolesButton = document.getElementById("reshuffleRoles");
+const backToSettingsButton = document.getElementById("backToSettings");
+const revealButton = document.getElementById("revealButton");
+const hideButton = document.getElementById("hideButton");
+const setupScreen = document.getElementById("setupScreen");
+const gameScreen = document.getElementById("gameScreen");
 const hiddenView = document.getElementById("hiddenView");
 const revealView = document.getElementById("revealView");
 const completeView = document.getElementById("completeView");
@@ -15,15 +29,18 @@ const roleHeadline = document.getElementById("roleHeadline");
 const roleDetails = document.getElementById("roleDetails");
 const roleTag = document.getElementById("roleTag");
 const roundStatus = document.getElementById("roundStatus");
+const starterAnnouncement = document.getElementById("starterAnnouncement");
 const setupMessage = document.getElementById("setupMessage");
+const appVersionLabel = document.getElementById("appVersion");
+const customCategorySection = document.getElementById("customCategorySection");
+const customCategoryDisabledNote = document.getElementById("customCategoryDisabledNote");
 const customCategoryNameInput = document.getElementById("customCategoryName");
-const customCategoryWordsInput = document.getElementById("customCategoryWords");
+const wordEntryInput = document.getElementById("wordEntryInput");
+const addWordButton = document.getElementById("addWordButton");
+const wordChipList = document.getElementById("wordChipList");
 const saveCategoryButton = document.getElementById("saveCategory");
 const clearCategoryButton = document.getElementById("clearCategory");
 const customCategoryList = document.getElementById("customCategoryList");
-
-const STORAGE_KEY = "imposter.customCategories.v1";
-const SAME_PLAYER_WEIGHT = 0.5;
 
 const BUILT_IN_CATEGORIES = {
   Food: [
@@ -32,6 +49,7 @@ const BUILT_IN_CATEGORIES = {
     { word: "Taco", hint: "Folded and filled tortilla" },
     { word: "Pancakes", hint: "Breakfast stack with syrup" },
     { word: "Guacamole", hint: "Creamy avocado dip" },
+    { word: "Burger", hint: "Layered bun and patty" },
   ],
   Animals: [
     { word: "Elephant", hint: "Massive, with a trunk" },
@@ -39,6 +57,7 @@ const BUILT_IN_CATEGORIES = {
     { word: "Kangaroo", hint: "Jumps with a pouch" },
     { word: "Giraffe", hint: "Very long neck" },
     { word: "Dolphin", hint: "Smart ocean acrobat" },
+    { word: "Octopus", hint: "Eight-armed sea creature" },
   ],
   Travel: [
     { word: "Passport", hint: "Tiny booklet for borders" },
@@ -46,78 +65,46 @@ const BUILT_IN_CATEGORIES = {
     { word: "Compass", hint: "Points you north" },
     { word: "Hostel", hint: "Budget traveler bed" },
     { word: "Ticket", hint: "Admits you aboard" },
+    { word: "Airport", hint: "Flights arrive and depart" },
   ],
   Sports: [
     { word: "Basketball", hint: "Orange ball, tall hoop" },
     { word: "Tennis", hint: "Rackets and a net" },
-    { word: "Soccer", hint: "World's most popular game" },
+    { word: "Soccer", hint: "World's most played game" },
     { word: "Hockey", hint: "Ice, sticks, and puck" },
     { word: "Volleyball", hint: "Bump, set, spike" },
+    { word: "Cricket", hint: "Bat, wicket, and overs" },
   ],
   Movies: [
-    { word: "Director", hint: "Calls 'Action!'" },
+    { word: "Director", hint: "Calls action" },
     { word: "Popcorn", hint: "Buttery theater snack" },
     { word: "Trailer", hint: "Preview before the film" },
     { word: "Credits", hint: "Roll at the end" },
     { word: "Sequel", hint: "Next installment" },
+    { word: "Premiere", hint: "First public screening" },
   ],
 };
 
 const state = {
   playerCount: 6,
+  imposterCount: 1,
   currentPlayer: 1,
-  imposterIndex: 1,
+  imposterIndices: [1],
   category: "",
   word: "",
   hint: "",
   showCategoryToImposter: true,
   showHintToImposter: false,
+  showCategoryToCrewmate: true,
+  showHintToCrewmate: true,
+  autoStarter: false,
+  starterPlayer: null,
   roundReady: false,
+  customCategoryEnabled: true,
   customCategories: loadCustomCategories(),
+  usedWords: loadUsedWords(),
+  draftEntries: [],
 };
-
-function loadCustomCategories() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return {};
-    }
-
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return {};
-    }
-
-    const categories = {};
-    Object.entries(parsed).forEach(([name, value]) => {
-      const categoryName = normalizeText(name);
-      if (!categoryName || !Array.isArray(value) || isBuiltInCategory(categoryName)) {
-        return;
-      }
-
-      const entries = normalizeEntries(value);
-      if (entries.length > 0) {
-        categories[categoryName] = entries;
-      }
-    });
-
-    return categories;
-  } catch (error) {
-    console.warn("[Debug] Failed to load custom categories:", error);
-    return {};
-  }
-}
-
-function saveCustomCategories() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.customCategories));
-    return true;
-  } catch (error) {
-    console.warn("[Debug] Failed to save custom categories:", error);
-    setMessage("Your browser blocked saving custom categories.", true);
-    return false;
-  }
-}
 
 function normalizeText(value) {
   return String(value || "").trim();
@@ -130,6 +117,23 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function setMessage(message, isError = false) {
+  if (!message) {
+    setupMessage.classList.add("message-hidden");
+    setupMessage.classList.remove("message-error");
+    setupMessage.textContent = "";
+    return;
+  }
+
+  setupMessage.textContent = message;
+  setupMessage.classList.remove("message-hidden");
+  setupMessage.classList.toggle("message-error", isError);
+}
+
+function randomItem(list) {
+  return list[Math.floor(Math.random() * list.length)];
 }
 
 function normalizeEntries(entries) {
@@ -147,66 +151,16 @@ function normalizeEntries(entries) {
       return;
     }
 
-    const dedupeKey = word.toLowerCase();
-    if (seen.has(dedupeKey)) {
+    const key = word.toLowerCase();
+    if (seen.has(key)) {
       return;
     }
 
-    seen.add(dedupeKey);
-    normalized.push({
-      word,
-      hint,
-    });
+    seen.add(key);
+    normalized.push({ word, hint });
   });
 
   return normalized;
-}
-
-function parseWordList(rawText) {
-  const lines = rawText
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  const entries = lines.map((line) => {
-    const separators = ["|", "=>", " - ", ":"];
-    for (const separator of separators) {
-      const index = line.indexOf(separator);
-      if (index > 0) {
-        return {
-          word: line.slice(0, index),
-          hint: line.slice(index + separator.length),
-        };
-      }
-    }
-
-    return { word: line, hint: "" };
-  });
-
-  return normalizeEntries(entries);
-}
-
-function getAllCategories() {
-  return {
-    ...BUILT_IN_CATEGORIES,
-    ...state.customCategories,
-  };
-}
-
-function getCategoryNames() {
-  return Object.keys(getAllCategories());
-}
-
-function categoryExists(name) {
-  const target = normalizeText(name).toLowerCase();
-  return getCategoryNames().some((categoryName) => categoryName.toLowerCase() === target);
-}
-
-function findCustomCategoryKey(name) {
-  const target = normalizeText(name).toLowerCase();
-  return Object.keys(state.customCategories).find(
-    (categoryName) => categoryName.toLowerCase() === target
-  );
 }
 
 function isBuiltInCategory(name) {
@@ -216,7 +170,125 @@ function isBuiltInCategory(name) {
   );
 }
 
+function loadCustomCategories() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_CATEGORY_STORAGE_KEY);
+    if (!raw) {
+      return {};
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return {};
+    }
+
+    const categories = {};
+    Object.entries(parsed).forEach(([name, entries]) => {
+      const categoryName = normalizeText(name);
+      if (!categoryName || isBuiltInCategory(categoryName) || !Array.isArray(entries)) {
+        return;
+      }
+
+      const normalized = normalizeEntries(entries);
+      if (normalized.length > 1) {
+        categories[categoryName] = normalized;
+      }
+    });
+
+    return categories;
+  } catch (error) {
+    console.warn("[Debug] Failed loading custom categories:", error);
+    return {};
+  }
+}
+
+function saveCustomCategories() {
+  try {
+    localStorage.setItem(CUSTOM_CATEGORY_STORAGE_KEY, JSON.stringify(state.customCategories));
+    return true;
+  } catch (error) {
+    console.warn("[Debug] Failed saving custom categories:", error);
+    setMessage("Could not save categories in this browser.", true);
+    return false;
+  }
+}
+
+function loadUsedWords() {
+  try {
+    const raw = localStorage.getItem(USED_WORDS_STORAGE_KEY);
+    if (!raw) {
+      return {};
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return {};
+    }
+
+    const normalized = {};
+    Object.entries(parsed).forEach(([categoryKey, words]) => {
+      if (!Array.isArray(words)) {
+        return;
+      }
+      const uniqueWords = Array.from(
+        new Set(words.map((word) => normalizeText(word).toLowerCase()).filter(Boolean))
+      );
+      if (uniqueWords.length > 0) {
+        normalized[normalizeText(categoryKey).toLowerCase()] = uniqueWords;
+      }
+    });
+
+    return normalized;
+  } catch (error) {
+    console.warn("[Debug] Failed loading used words:", error);
+    return {};
+  }
+}
+
+function saveUsedWords() {
+  try {
+    localStorage.setItem(USED_WORDS_STORAGE_KEY, JSON.stringify(state.usedWords));
+  } catch (error) {
+    console.warn("[Debug] Failed saving used words:", error);
+  }
+}
+
+function getAvailableCategoryNames() {
+  const builtInNames = Object.keys(BUILT_IN_CATEGORIES);
+  if (!state.customCategoryEnabled) {
+    return builtInNames;
+  }
+
+  return builtInNames.concat(Object.keys(state.customCategories));
+}
+
+function getCategoryBank() {
+  if (!state.customCategoryEnabled) {
+    return { ...BUILT_IN_CATEGORIES };
+  }
+
+  return {
+    ...BUILT_IN_CATEGORIES,
+    ...state.customCategories,
+  };
+}
+
+function categoryExists(name) {
+  const target = normalizeText(name).toLowerCase();
+  return getAvailableCategoryNames().some(
+    (categoryName) => categoryName.toLowerCase() === target
+  );
+}
+
+function findCustomCategoryKey(name) {
+  const target = normalizeText(name).toLowerCase();
+  return Object.keys(state.customCategories).find(
+    (categoryName) => categoryName.toLowerCase() === target
+  );
+}
+
 function refreshCategoryOptions(selectedCategory = categorySelect.value) {
+  const names = getAvailableCategoryNames();
   categorySelect.innerHTML = "";
 
   const randomOption = document.createElement("option");
@@ -224,155 +296,262 @@ function refreshCategoryOptions(selectedCategory = categorySelect.value) {
   randomOption.textContent = "Random category";
   categorySelect.appendChild(randomOption);
 
-  const builtInNames = Object.keys(BUILT_IN_CATEGORIES);
-  if (builtInNames.length > 0) {
-    const builtInGroup = document.createElement("optgroup");
-    builtInGroup.label = "Built-in categories";
-    builtInNames.forEach((categoryName) => {
-      const option = document.createElement("option");
-      option.value = categoryName;
-      option.textContent = categoryName;
-      builtInGroup.appendChild(option);
-    });
-    categorySelect.appendChild(builtInGroup);
-  }
+  const builtInGroup = document.createElement("optgroup");
+  builtInGroup.label = "Built-in categories";
+  Object.keys(BUILT_IN_CATEGORIES).forEach((categoryName) => {
+    const option = document.createElement("option");
+    option.value = categoryName;
+    option.textContent = categoryName;
+    builtInGroup.appendChild(option);
+  });
+  categorySelect.appendChild(builtInGroup);
 
-  const customNames = Object.keys(state.customCategories);
-  if (customNames.length > 0) {
+  if (state.customCategoryEnabled && Object.keys(state.customCategories).length > 0) {
     const customGroup = document.createElement("optgroup");
-    customGroup.label = "Saved categories";
-    customNames.forEach((categoryName) => {
+    customGroup.label = "Custom categories";
+
+    Object.keys(state.customCategories).forEach((categoryName) => {
       const option = document.createElement("option");
       option.value = categoryName;
       option.textContent = categoryName;
       customGroup.appendChild(option);
     });
+
     categorySelect.appendChild(customGroup);
-  } else {
-    const emptyOption = document.createElement("option");
-    emptyOption.value = "__no_custom_categories__";
-    emptyOption.disabled = true;
-    emptyOption.textContent = "No saved categories yet";
-    categorySelect.appendChild(emptyOption);
   }
 
-  if (selectedCategory && selectedCategory !== "__no_custom_categories__" && categoryExists(selectedCategory)) {
+  if (selectedCategory === "random") {
+    categorySelect.value = "random";
+    return;
+  }
+
+  if (selectedCategory && names.includes(selectedCategory)) {
     categorySelect.value = selectedCategory;
   } else {
     categorySelect.value = "random";
   }
 }
 
-function renderCustomCategoryList() {
-  const names = Object.keys(state.customCategories);
-  customCategoryList.innerHTML = "";
+function syncImposterCountBounds() {
+  const parsedPlayers = Number(playerCountInput.value);
+  const fallbackPlayers = Number.isNaN(parsedPlayers) ? state.playerCount : parsedPlayers;
+  const maxImposters = Math.max(1, Math.min(3, fallbackPlayers - 1));
+  imposterCountInput.max = String(maxImposters);
 
-  if (names.length === 0) {
-    const emptyState = document.createElement("p");
-    emptyState.className = "muted small saved-empty";
-    emptyState.textContent = "No custom categories saved yet.";
-    customCategoryList.appendChild(emptyState);
+  const currentImposterCount = Number(imposterCountInput.value);
+  if (Number.isNaN(currentImposterCount) || currentImposterCount < 1) {
+    imposterCountInput.value = "1";
+  } else if (currentImposterCount > maxImposters) {
+    imposterCountInput.value = String(maxImposters);
+  }
+}
+
+function parseEntryToken(token) {
+  const trimmed = normalizeText(token);
+  if (!trimmed) {
+    return null;
+  }
+
+  const separators = ["|", "=>", ":"];
+  for (const separator of separators) {
+    const separatorIndex = trimmed.indexOf(separator);
+    if (separatorIndex > 0) {
+      return {
+        word: trimmed.slice(0, separatorIndex),
+        hint: trimmed.slice(separatorIndex + separator.length),
+      };
+    }
+  }
+
+  return { word: trimmed, hint: "" };
+}
+
+function parseEntriesFromRaw(rawText) {
+  return normalizeText(rawText)
+    .split(/[\n,;]+/)
+    .map((token) => parseEntryToken(token))
+    .filter(Boolean);
+}
+
+function renderDraftEntries() {
+  wordChipList.innerHTML = "";
+
+  if (state.draftEntries.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "chip-empty";
+    empty.textContent = "No words added yet.";
+    wordChipList.appendChild(empty);
     return;
   }
 
-  names.forEach((name) => {
-    const entries = state.customCategories[name];
-    const item = document.createElement("div");
-    item.className = "saved-category-item";
+  state.draftEntries.forEach((entry, index) => {
+    const chip = document.createElement("div");
+    chip.className = "chip";
+
+    const label = document.createElement("span");
+    label.className = "chip-text";
+    label.textContent = entry.hint ? `${entry.word} (${entry.hint})` : entry.word;
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "chip-remove";
+    removeButton.dataset.removeIndex = String(index);
+    removeButton.textContent = "x";
+
+    chip.appendChild(label);
+    chip.appendChild(removeButton);
+    wordChipList.appendChild(chip);
+  });
+}
+
+function addDraftEntriesFromRaw(rawText) {
+  const parsedEntries = parseEntriesFromRaw(rawText);
+  if (parsedEntries.length === 0) {
+    return 0;
+  }
+
+  const previousLength = state.draftEntries.length;
+  state.draftEntries = normalizeEntries(state.draftEntries.concat(parsedEntries));
+  renderDraftEntries();
+  return state.draftEntries.length - previousLength;
+}
+
+function clearDraftBuilder() {
+  customCategoryNameInput.value = "";
+  wordEntryInput.value = "";
+  state.draftEntries = [];
+  renderDraftEntries();
+  setMessage("");
+}
+
+function renderCustomCategoryList() {
+  customCategoryList.innerHTML = "";
+  const categoryNames = Object.keys(state.customCategories);
+
+  if (categoryNames.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "muted small";
+    empty.textContent = "No custom categories saved yet.";
+    customCategoryList.appendChild(empty);
+    return;
+  }
+
+  categoryNames.forEach((categoryName) => {
+    const entries = state.customCategories[categoryName];
+
+    const row = document.createElement("div");
+    row.className = "saved-category-item";
 
     const info = document.createElement("div");
     info.className = "saved-category-info";
 
     const title = document.createElement("strong");
-    title.textContent = name;
-    info.appendChild(title);
+    title.textContent = categoryName;
 
     const meta = document.createElement("p");
     meta.className = "muted small";
-    meta.textContent = `${entries.length} word${entries.length === 1 ? "" : "s"} saved locally`;
-    info.appendChild(meta);
+    meta.textContent = `${entries.length} words`;
 
-    const actions = document.createElement("div");
-    actions.className = "saved-category-actions";
+    info.appendChild(title);
+    info.appendChild(meta);
 
     const deleteButton = document.createElement("button");
     deleteButton.type = "button";
     deleteButton.className = "ghost danger";
-    deleteButton.dataset.deleteCategory = name;
+    deleteButton.dataset.deleteCategory = categoryName;
     deleteButton.textContent = "Delete";
-    actions.appendChild(deleteButton);
 
-    item.appendChild(info);
-    item.appendChild(actions);
-    customCategoryList.appendChild(item);
+    row.appendChild(info);
+    row.appendChild(deleteButton);
+    customCategoryList.appendChild(row);
   });
 }
 
-function randomItem(list) {
-  return list[Math.floor(Math.random() * list.length)];
+function updateCustomCategoryVisibility() {
+  state.customCategoryEnabled = customCategoryToggle.checked;
+
+  customCategorySection.classList.toggle("is-hidden", !state.customCategoryEnabled);
+  customCategoryDisabledNote.classList.toggle("is-hidden", state.customCategoryEnabled);
+
+  const selected = categorySelect.value;
+  refreshCategoryOptions(selected);
 }
 
 function pickCategory() {
-  const choice = categorySelect.value;
-  if (choice === "random") {
-    return randomItem(getCategoryNames());
+  const availableCategories = getAvailableCategoryNames();
+  if (availableCategories.length === 0) {
+    return "";
   }
 
-  if (categoryExists(choice)) {
-    return choice;
+  const selected = categorySelect.value;
+  if (selected === "random") {
+    return randomItem(availableCategories);
   }
 
-  return randomItem(Object.keys(BUILT_IN_CATEGORIES));
+  if (categoryExists(selected)) {
+    return selected;
+  }
+
+  return availableCategories[0];
 }
 
-function pickWord(category) {
-  const bank = getAllCategories();
-  const entries = bank[category] || [];
-  const entry = randomItem(entries);
+function pickWord(categoryName) {
+  const bank = getCategoryBank();
+  const entries = bank[categoryName] || [];
+  if (entries.length === 0) {
+    return null;
+  }
+
+  const usedKey = categoryName.toLowerCase();
+  const usedWords = new Set((state.usedWords[usedKey] || []).map((word) => word.toLowerCase()));
+
+  let candidates = entries.filter((entry) => !usedWords.has(entry.word.toLowerCase()));
+  if (candidates.length === 0) {
+    state.usedWords[usedKey] = [];
+    candidates = entries;
+  }
+
+  const pickedEntry = randomItem(candidates);
+  const nextUsedWords = new Set(state.usedWords[usedKey] || []);
+  nextUsedWords.add(pickedEntry.word.toLowerCase());
+  state.usedWords[usedKey] = Array.from(nextUsedWords);
+  saveUsedWords();
+
   return {
-    word: entry.word,
-    hint: entry.hint || "No hint provided",
+    word: pickedEntry.word,
+    hint: pickedEntry.hint || "No hint provided",
   };
 }
 
-function pickImposterIndex(playerCount, previousImposterIndex) {
-  if (
-    !Number.isInteger(previousImposterIndex) ||
-    previousImposterIndex < 1 ||
-    previousImposterIndex > playerCount
-  ) {
-    return Math.floor(Math.random() * playerCount) + 1;
+function pickImposterIndices(playerCount, imposterCount, previousImposters) {
+  const pool = [];
+
+  for (let player = 1; player <= playerCount; player += 1) {
+    pool.push({
+      player,
+      weight: previousImposters.includes(player) ? SAME_PLAYER_WEIGHT : 1,
+    });
   }
 
-  const weights = Array.from({ length: playerCount }, (_, index) => {
-    const playerIndex = index + 1;
-    return playerIndex === previousImposterIndex ? SAME_PLAYER_WEIGHT : 1;
-  });
+  const result = [];
+  while (result.length < imposterCount && pool.length > 0) {
+    const totalWeight = pool.reduce((sum, item) => sum + item.weight, 0);
+    let roll = Math.random() * totalWeight;
+    let selectedIndex = pool.length - 1;
 
-  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
-  let roll = Math.random() * totalWeight;
-
-  for (let index = 0; index < weights.length; index += 1) {
-    roll -= weights[index];
-    if (roll < 0) {
-      return index + 1;
+    for (let index = 0; index < pool.length; index += 1) {
+      roll -= pool[index].weight;
+      if (roll < 0) {
+        selectedIndex = index;
+        break;
+      }
     }
+
+    result.push(pool[selectedIndex].player);
+    pool.splice(selectedIndex, 1);
   }
 
-  return playerCount;
-}
-
-function setMessage(message, isError = false) {
-  if (!message) {
-    setupMessage.classList.add("message-hidden");
-    setupMessage.textContent = "";
-    setupMessage.classList.remove("message-error");
-    return;
-  }
-
-  setupMessage.textContent = message;
-  setupMessage.classList.remove("message-hidden");
-  setupMessage.classList.toggle("message-error", isError);
+  return result.sort((a, b) => a - b);
 }
 
 function updateStatus(label) {
@@ -380,53 +559,35 @@ function updateStatus(label) {
 }
 
 function syncHiddenView() {
-  playerPrompt.textContent = `Player ${state.currentPlayer}, your turn`;
+  playerPrompt.textContent = `Player ${state.currentPlayer} of ${state.playerCount}, your turn`;
 }
 
-function toggleViews({ hidden = false, revealed = false, complete = false }) {
+function toggleRoundCards({ hidden = false, revealed = false, complete = false }) {
   hiddenView.classList.toggle("is-hidden", !hidden);
   revealView.classList.toggle("is-hidden", !revealed);
   completeView.classList.toggle("is-hidden", !complete);
 }
 
-function startRound({ reuseWord = false } = {}) {
-  const playerCount = Number(playerCountInput.value);
-  if (Number.isNaN(playerCount) || playerCount < 3 || playerCount > 8) {
-    setMessage("Player count must be between 3 and 8.", true);
-    console.log("[Debug] Invalid player count entered:", playerCount);
-    return;
+function showSetupScreen() {
+  setupScreen.classList.remove("is-hidden");
+  gameScreen.classList.add("is-hidden");
+}
+
+function showGameScreen() {
+  setupScreen.classList.add("is-hidden");
+  gameScreen.classList.remove("is-hidden");
+}
+
+function renderCompleteView() {
+  if (state.autoStarter && Number.isInteger(state.starterPlayer)) {
+    starterAnnouncement.textContent = `Player ${state.starterPlayer} starts the discussion.`;
+  } else {
+    starterAnnouncement.textContent = "Everyone has their role. Start discussing.";
   }
-
-  const previousImposter = state.imposterIndex;
-
-  state.playerCount = playerCount;
-  state.currentPlayer = 1;
-  state.showCategoryToImposter = categoryToggle.checked;
-  state.showHintToImposter = hintToggle.checked;
-  state.roundReady = true;
-
-  if (!reuseWord) {
-    const category = pickCategory();
-    const selection = pickWord(category);
-    state.category = category;
-    state.word = selection.word;
-    state.hint = selection.hint;
-  }
-
-  state.imposterIndex = pickImposterIndex(playerCount, previousImposter);
-
-  setMessage("");
-  updateStatus("Round in progress");
-  syncHiddenView();
-  toggleViews({ hidden: true });
-
-  console.log(
-    `[Debug] New round started - players: ${playerCount}, imposter: ${state.imposterIndex}, category: ${state.category}, word: ${state.word}, categoryClue: ${state.showCategoryToImposter}, hintClue: ${state.showHintToImposter}`
-  );
 }
 
 function renderReveal() {
-  const isImposter = state.currentPlayer === state.imposterIndex;
+  const isImposter = state.imposterIndices.includes(state.currentPlayer);
   roleTag.textContent = isImposter ? "Imposter" : "Crewmate";
   roleTag.classList.toggle("role-imposter", isImposter);
   roleTag.classList.toggle("role-crewmate", !isImposter);
@@ -444,66 +605,132 @@ function renderReveal() {
     if (state.showHintToImposter) {
       clues.push(`<strong>Hint:</strong> ${escapeHtml(state.hint)}`);
     } else {
-      clues.push("<strong>Hint:</strong> Not shown to Imposter");
+      clues.push("<strong>Hint:</strong> Hidden this round");
     }
 
-    clues.push("Blend in and figure out the secret word.");
+    clues.push("Blend in and identify the secret word.");
     roleDetails.innerHTML = clues.map((item) => `<li>${item}</li>`).join("");
-  } else {
-    roleHeadline.textContent = "You are a Crewmate";
-    const details = [
-      `<strong>Word:</strong> ${escapeHtml(state.word)}`,
-      `<strong>Category:</strong> ${escapeHtml(state.category)}`,
-      `<strong>Hint:</strong> ${escapeHtml(state.hint)}`,
-    ];
-    roleDetails.innerHTML = details.map((item) => `<li>${item}</li>`).join("");
+    return;
   }
 
+  roleHeadline.textContent = "You are a Crewmate";
+  const details = [`<strong>Word:</strong> ${escapeHtml(state.word)}`];
+
+  if (state.showCategoryToCrewmate) {
+    details.push(`<strong>Category:</strong> ${escapeHtml(state.category)}`);
+  } else {
+    details.push("<strong>Category:</strong> Hidden this round");
+  }
+
+  if (state.showHintToCrewmate) {
+    details.push(`<strong>Hint:</strong> ${escapeHtml(state.hint)}`);
+  } else {
+    details.push("<strong>Hint:</strong> Hidden this round");
+  }
+
+  roleDetails.innerHTML = details.map((item) => `<li>${item}</li>`).join("");
+}
+
+function startRound({ reuseWord = false } = {}) {
+  const playerCount = Number(playerCountInput.value);
+  if (Number.isNaN(playerCount) || playerCount < 3 || playerCount > 12) {
+    setMessage("Player count must be between 3 and 12.", true);
+    return;
+  }
+
+  syncImposterCountBounds();
+  const imposterCount = Number(imposterCountInput.value);
+  if (Number.isNaN(imposterCount) || imposterCount < 1 || imposterCount >= playerCount) {
+    setMessage("Imposter count must be at least 1 and less than player count.", true);
+    return;
+  }
+
+  const previousImposters = state.imposterIndices.slice();
+  state.playerCount = playerCount;
+  state.imposterCount = imposterCount;
+  state.currentPlayer = 1;
+  state.showCategoryToImposter = categoryToggle.checked;
+  state.showHintToImposter = hintToggle.checked;
+  state.showCategoryToCrewmate = crewCategoryToggle.checked;
+  state.showHintToCrewmate = crewHintToggle.checked;
+  state.autoStarter = autoStarterToggle.checked;
+  state.roundReady = true;
+
+  if (!reuseWord) {
+    const pickedCategory = pickCategory();
+    if (!pickedCategory) {
+      setMessage("No categories available. Enable categories and try again.", true);
+      return;
+    }
+
+    const pickedWord = pickWord(pickedCategory);
+    if (!pickedWord) {
+      setMessage("That category has no words. Pick another category.", true);
+      return;
+    }
+
+    state.category = pickedCategory;
+    state.word = pickedWord.word;
+    state.hint = pickedWord.hint;
+  }
+
+  state.imposterIndices = pickImposterIndices(playerCount, imposterCount, previousImposters);
+  state.starterPlayer = state.autoStarter ? Math.floor(Math.random() * playerCount) + 1 : null;
+
+  setMessage("");
+  updateStatus("Round in progress");
+  syncHiddenView();
+  toggleRoundCards({ hidden: true });
+  showGameScreen();
+
   console.log(
-    `[Debug] Player ${state.currentPlayer} revealed as ${isImposter ? "Imposter" : "Crewmate"}`
+    `[Debug] Round started - players: ${playerCount}, imposters: ${state.imposterIndices.join(","
+    )}, category: ${state.category}, word: ${state.word}`
   );
 }
 
 function revealRole() {
   if (!state.roundReady) {
     setMessage("Start a round first.", true);
-    console.log("[Debug] Reveal blocked - round has not been started.");
     return;
   }
 
-  toggleViews({ revealed: true });
+  toggleRoundCards({ revealed: true });
   renderReveal();
 }
 
 function hideRole() {
   if (state.currentPlayer >= state.playerCount) {
-    toggleViews({ complete: true });
-    updateStatus("Ready to vote");
-    console.log("[Debug] All roles viewed. Begin discussion and voting.");
+    toggleRoundCards({ complete: true });
+    updateStatus("Ready to discuss");
+    renderCompleteView();
     return;
   }
 
   state.currentPlayer += 1;
   syncHiddenView();
-  toggleViews({ hidden: true });
+  toggleRoundCards({ hidden: true });
 }
 
 function saveCustomCategory() {
-  const categoryName = normalizeText(customCategoryNameInput.value);
-  const entries = parseWordList(customCategoryWordsInput.value);
+  if (normalizeText(wordEntryInput.value)) {
+    addDraftEntriesFromRaw(wordEntryInput.value);
+    wordEntryInput.value = "";
+  }
 
+  const categoryName = normalizeText(customCategoryNameInput.value);
   if (!categoryName) {
     setMessage("Enter a category name.", true);
     return;
   }
 
   if (isBuiltInCategory(categoryName)) {
-    setMessage("That name is already used by a built-in category.", true);
+    setMessage("That name is reserved by a built-in category.", true);
     return;
   }
 
-  if (entries.length < 2) {
-    setMessage("Add at least 2 words to make a custom category.", true);
+  if (state.draftEntries.length < 2) {
+    setMessage("Add at least 2 words before saving.", true);
     return;
   }
 
@@ -512,25 +739,20 @@ function saveCustomCategory() {
     delete state.customCategories[existingKey];
   }
 
-  state.customCategories[categoryName] = entries;
-  const saved = saveCustomCategories();
+  state.customCategories[categoryName] = normalizeEntries(state.draftEntries);
+  if (!saveCustomCategories()) {
+    return;
+  }
+
   refreshCategoryOptions(categoryName);
   renderCustomCategoryList();
+  clearDraftBuilder();
   categorySelect.value = categoryName;
-  if (saved) {
-    setMessage(`Saved ${categoryName} locally.`);
-  }
+  setMessage(`Saved custom category: ${categoryName}`);
 }
 
-function clearCustomCategoryForm() {
-  customCategoryNameInput.value = "";
-  customCategoryWordsInput.value = "";
-  setMessage("");
-  customCategoryNameInput.focus();
-}
-
-function deleteCustomCategory(name) {
-  const key = findCustomCategoryKey(name);
+function deleteCustomCategory(categoryName) {
+  const key = findCustomCategoryKey(categoryName);
   if (!key) {
     return;
   }
@@ -544,7 +766,13 @@ function deleteCustomCategory(name) {
     categorySelect.value = "random";
   }
 
-  setMessage(`Deleted ${key}.`);
+  setMessage(`Deleted custom category: ${key}`);
+}
+
+function resetUsedWords() {
+  state.usedWords = {};
+  saveUsedWords();
+  setMessage("Used-word history cleared.");
 }
 
 function attachHandlers() {
@@ -553,8 +781,56 @@ function attachHandlers() {
   hideButton.addEventListener("click", hideRole);
   restartRoundButton.addEventListener("click", () => startRound());
   reshuffleRolesButton.addEventListener("click", () => startRound({ reuseWord: true }));
+  backToSettingsButton.addEventListener("click", showSetupScreen);
+
+  playerCountInput.addEventListener("input", syncImposterCountBounds);
+  customCategoryToggle.addEventListener("change", updateCustomCategoryVisibility);
+  resetWordsButton.addEventListener("click", resetUsedWords);
+
+  addWordButton.addEventListener("click", () => {
+    const addedCount = addDraftEntriesFromRaw(wordEntryInput.value);
+    wordEntryInput.value = "";
+    if (addedCount === 0) {
+      setMessage("Enter at least one valid word before adding.", true);
+    } else {
+      setMessage("");
+    }
+  });
+
+  wordEntryInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    const addedCount = addDraftEntriesFromRaw(wordEntryInput.value);
+    wordEntryInput.value = "";
+
+    if (addedCount === 0) {
+      setMessage("Enter at least one valid word before adding.", true);
+    } else {
+      setMessage("");
+    }
+  });
+
+  wordChipList.addEventListener("click", (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const removeButton = target ? target.closest("button[data-remove-index]") : null;
+    if (!removeButton) {
+      return;
+    }
+
+    const index = Number(removeButton.dataset.removeIndex);
+    if (Number.isNaN(index)) {
+      return;
+    }
+
+    state.draftEntries.splice(index, 1);
+    renderDraftEntries();
+  });
+
   saveCategoryButton.addEventListener("click", saveCustomCategory);
-  clearCategoryButton.addEventListener("click", clearCustomCategoryForm);
+  clearCategoryButton.addEventListener("click", clearDraftBuilder);
 
   customCategoryList.addEventListener("click", (event) => {
     const target = event.target instanceof Element ? event.target : null;
@@ -568,11 +844,16 @@ function attachHandlers() {
 }
 
 function init() {
-  refreshCategoryOptions();
+  appVersionLabel.textContent = APP_VERSION;
+  syncImposterCountBounds();
+  refreshCategoryOptions("random");
+  renderDraftEntries();
   renderCustomCategoryList();
+  updateCustomCategoryVisibility();
   attachHandlers();
   updateStatus("Waiting to start");
   syncHiddenView();
+  showSetupScreen();
 }
 
 init();

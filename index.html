@@ -7,134 +7,161 @@
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="app-shell">
     <header class="app-header">
       <div>
-        <p class="eyebrow">Party game</p>
+        <p class="eyebrow">Party Word Game</p>
         <h1>Imposter</h1>
-        <p class="lead">
-          Pass the phone around, reveal your role, and keep the secret word safe from the Imposter.
-        </p>
+        <p class="lead">One device, one hidden imposter, one secret word. Set up once, then pass the phone.</p>
       </div>
       <div class="pill-group">
-        <span class="pill">3-8 players</span>
-        <span class="pill pill-info">Word + deception</span>
-        <span class="pill pill-version" id="appVersion">v1.2.0</span>
+        <span class="pill">3-12 players</span>
+        <span class="pill">Pass-the-phone</span>
+        <span class="pill pill-version" id="appVersion">v2.0.0</span>
       </div>
     </header>
 
-    <main class="grid">
-      <section class="panel">
-        <header class="panel-header">
+    <main class="app-main">
+      <section id="setupScreen" class="screen">
+        <header class="screen-header">
           <div>
             <p class="eyebrow">Step 1</p>
-            <h2>Set up the round</h2>
+            <h2>Round setup</h2>
           </div>
           <button id="startRound" class="primary" type="button">Start round</button>
         </header>
 
-        <div class="form">
-          <label class="field">
-            <span>Number of players</span>
-            <input id="playerCount" type="number" min="3" max="8" value="6" />
-            <small>Must be between 3 and 8.</small>
-          </label>
-
-          <label class="field">
-            <span>Category</span>
-            <select id="categorySelect"></select>
-            <small>Pick a built-in category or one you saved locally.</small>
-          </label>
-
-          <div class="field toggles">
-            <label class="toggle">
-              <input type="checkbox" id="categoryToggle" checked />
-              <span>Show the Imposter the <strong>category</strong></span>
+        <div class="section-block">
+          <h3 class="section-title">Core settings</h3>
+          <div class="field-grid two-col">
+            <label class="field">
+              <span>Number of players</span>
+              <input id="playerCount" type="number" min="3" max="12" value="6" />
+              <small>Must be between 3 and 12.</small>
             </label>
-            <label class="toggle">
-              <input type="checkbox" id="hintToggle" />
-              <span>Show the Imposter a <strong>hint</strong></span>
+
+            <label class="field">
+              <span>Category</span>
+              <select id="categorySelect"></select>
+              <small>Choose one or keep it random.</small>
             </label>
-            <small>Enable either or both to make the Imposter's job easier.</small>
           </div>
         </div>
 
-        <section class="subpanel">
-          <div class="subpanel-header">
+        <div class="section-block">
+          <h3 class="section-title">Clues shown during reveal</h3>
+          <div class="field-grid two-col">
+            <div class="field">
+              <span>Imposter clues</span>
+              <label class="toggle"><input id="categoryToggle" type="checkbox" checked /> <span>Show category</span></label>
+              <label class="toggle"><input id="hintToggle" type="checkbox" /> <span>Show hint</span></label>
+            </div>
+            <div class="field">
+              <span>Crewmate clues</span>
+              <label class="toggle"><input id="crewCategoryToggle" type="checkbox" checked /> <span>Show category</span></label>
+              <label class="toggle"><input id="crewHintToggle" type="checkbox" checked /> <span>Show hint</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <h3 class="section-title">Advanced options</h3>
+          <div class="field-grid two-col">
+            <label class="field">
+              <span>Imposters this round</span>
+              <input id="imposterCount" type="number" min="1" max="3" value="1" />
+              <small>Higher values suit larger groups.</small>
+            </label>
+
+            <div class="field">
+              <span>Round tools</span>
+              <label class="toggle"><input id="autoStarterToggle" type="checkbox" /> <span>Auto-pick discussion starter</span></label>
+              <label class="toggle"><input id="customCategoryToggle" type="checkbox" checked /> <span>Enable custom categories</span></label>
+              <button id="resetWords" class="ghost" type="button">Reset used words</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="customCategoryDisabledNote" class="note is-hidden">
+          Custom categories are currently disabled. Enable them in Advanced options to use your saved lists.
+        </div>
+
+        <section id="customCategorySection" class="section-block">
+          <header class="section-header-inline">
             <div>
               <p class="eyebrow">Custom categories</p>
-              <h3>Save your own wordlists</h3>
+              <h3 class="section-title">Build category from quick word entries</h3>
             </div>
-            <p class="muted small">Stored in this browser only.</p>
-          </div>
+            <p class="muted small">Saved in this browser only.</p>
+          </header>
 
-          <div class="form compact-form">
+          <div class="field-grid two-col">
             <label class="field">
               <span>Category name</span>
               <input id="customCategoryName" type="text" maxlength="40" placeholder="Family trip" />
             </label>
 
-            <label class="field">
-              <span>Word list</span>
-              <textarea
-                id="customCategoryWords"
-                rows="7"
-                placeholder="Coffee | Morning fuel\nLibrary | Quiet place\nBackpack | School bag"
-              ></textarea>
-              <small>Use one line per entry. Add an optional hint with <code>word | hint</code>.</small>
-            </label>
-
-            <div class="actions">
-              <button id="saveCategory" class="primary" type="button">Save category</button>
-              <button id="clearCategory" class="ghost" type="button">Clear form</button>
+            <div class="field">
+              <span>Add words quickly</span>
+              <div class="word-entry-row">
+                <input id="wordEntryInput" type="text" placeholder="Type word and press Enter (or paste comma-separated words)" />
+                <button id="addWordButton" class="secondary" type="button">Add</button>
+              </div>
+              <small>Optional hint format: <code>word | hint</code>.</small>
+              <div id="wordChipList" class="chip-list" aria-live="polite"></div>
             </div>
+          </div>
+
+          <div class="actions">
+            <button id="saveCategory" class="primary" type="button">Save category</button>
+            <button id="clearCategory" class="ghost" type="button">Clear builder</button>
           </div>
 
           <div id="customCategoryList" class="saved-category-list" aria-live="polite"></div>
         </section>
 
         <div class="note">
-          <strong>How it works:</strong> One random Imposter sees "Imposter" (plus any clues you allow). Crewmates see the secret word. Tap to reveal, tap again to hide, then pass the phone clockwise.
+          Setup stays on this screen. Once you start the round, only the role reveal screen is shown while passing the phone.
         </div>
         <div id="setupMessage" class="message message-hidden" role="status" aria-live="polite"></div>
       </section>
 
-      <section class="panel">
-        <header class="panel-header">
+      <section id="gameScreen" class="screen is-hidden">
+        <header class="screen-header">
           <div>
             <p class="eyebrow">Step 2</p>
             <h2>Reveal roles</h2>
           </div>
-          <span class="pill ghost" id="roundStatus" role="status" aria-live="polite">Waiting to start</span>
+          <span class="status-pill" id="roundStatus" role="status" aria-live="polite">Waiting to start</span>
         </header>
 
         <div id="roundContainer" class="round-container">
-          <div id="hiddenView" class="card focus-card">
+          <div id="hiddenView" class="card">
             <p class="eyebrow muted">Pass the phone</p>
             <h3 id="playerPrompt">Player 1, your turn</h3>
-            <p class="muted">Tap below when you're ready to see your role.</p>
+            <p class="muted">Tap below to reveal only your role.</p>
             <button id="revealButton" class="primary stretch" type="button">Tap to reveal</button>
-            <p class="safe-area-hint">Tip: Use landscape for bigger tap targets.</p>
+            <p class="safe-area-hint">After reading, tap hide and pass to the next player.</p>
           </div>
 
           <div id="revealView" class="card is-hidden">
             <p class="eyebrow" id="roleTag">Role</p>
             <h3 id="roleHeadline">You are the Imposter</h3>
             <ul id="roleDetails" class="detail-list"></ul>
-            <button id="hideButton" class="secondary stretch" type="button">Hide &amp; pass</button>
-            <p class="muted small">Tap or press space/enter to hide on mobile or desktop.</p>
+            <button id="hideButton" class="secondary stretch" type="button">Hide and pass</button>
           </div>
 
           <div id="completeView" class="card is-hidden">
             <p class="eyebrow">All roles revealed</p>
-            <h3>Discuss, then vote out the Imposter.</h3>
-            <p class="muted">Need a fresh word? Start another round.</p>
+            <h3>Discuss and vote.</h3>
+            <p id="starterAnnouncement" class="muted"></p>
             <div class="actions">
-              <button id="restartRound" class="primary" type="button">Start another round</button>
-              <button id="reshuffleRoles" class="ghost" type="button">Reuse word, reshuffle roles</button>
+              <button id="restartRound" class="primary" type="button">New round (new word)</button>
+              <button id="reshuffleRoles" class="secondary" type="button">Reshuffle roles (same word)</button>
+              <button id="backToSettings" class="ghost" type="button">Back to setup</button>
             </div>
           </div>
         </div>
