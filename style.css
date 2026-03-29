@@ -437,6 +437,12 @@ button:hover {
   color: var(--accent);
 }
 
+.secret-word-value {
+  font-size: 1.45em;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
 .role-imposter {
   color: #ffc7d6;
 }
@@ -466,6 +472,14 @@ button:hover {
 #hiddenView .instruction-list {
   margin-top: 8px;
   margin-bottom: 14px;
+}
+
+#revealButton,
+#hideButton {
+  min-height: 56px;
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
 }
 
 .is-hidden {
@@ -534,6 +548,12 @@ button:hover {
 
   #customCategorySection .saved-category-list {
     margin-top: 14px;
+  }
+
+  #revealButton,
+  #hideButton {
+    min-height: 62px;
+    font-size: 1.18rem;
   }
 
   button {

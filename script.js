@@ -630,8 +630,6 @@ function renderReveal() {
     roleHeadline.textContent = "You are the Imposter";
     const clues = [];
 
-    clues.push("<strong>Your objective:</strong> blend in without knowing the word.");
-
     if (state.showCategoryToImposter) {
       clues.push(`<strong>Category:</strong> ${escapeHtml(state.category)}`);
     } else {
@@ -649,10 +647,9 @@ function renderReveal() {
   }
 
   roleHeadline.textContent = "You are a Crewmate";
-  roleDetails.innerHTML = [
-    `<li><strong>Secret word:</strong> ${escapeHtml(state.word)}</li>`,
-    "<li><strong>Your objective:</strong> expose the imposter without saying the exact word.</li>",
-  ].join("");
+  roleDetails.innerHTML = `<li><strong>Secret word:</strong> <span class="secret-word-value">${escapeHtml(
+    state.word
+  )}</span></li>`;
 }
 
 function startRound({ reuseWord = false } = {}) {
