@@ -32,7 +32,7 @@
             <p class="eyebrow">Step 1</p>
             <h2>Set up the round</h2>
           </div>
-          <button id="startRound" class="primary">Start round</button>
+          <button id="startRound" class="primary" type="button">Start round</button>
         </header>
 
         <div class="form">
@@ -45,7 +45,7 @@
           <label class="field">
             <span>Category</span>
             <select id="categorySelect"></select>
-            <small>Pick a category or keep it random.</small>
+            <small>Pick a built-in category or one you saved locally.</small>
           </label>
 
           <div class="field toggles">
@@ -57,15 +57,48 @@
               <input type="checkbox" id="hintToggle" />
               <span>Show the Imposter a <strong>hint</strong></span>
             </label>
-            <small>Enable either or both to make the Imposter’s job easier.</small>
+            <small>Enable either or both to make the Imposter's job easier.</small>
           </div>
         </div>
 
+        <section class="subpanel">
+          <div class="subpanel-header">
+            <div>
+              <p class="eyebrow">Custom categories</p>
+              <h3>Save your own wordlists</h3>
+            </div>
+            <p class="muted small">Stored in this browser only.</p>
+          </div>
+
+          <div class="form compact-form">
+            <label class="field">
+              <span>Category name</span>
+              <input id="customCategoryName" type="text" maxlength="40" placeholder="Family trip" />
+            </label>
+
+            <label class="field">
+              <span>Word list</span>
+              <textarea
+                id="customCategoryWords"
+                rows="7"
+                placeholder="Coffee | Morning fuel\nLibrary | Quiet place\nBackpack | School bag"
+              ></textarea>
+              <small>Use one line per entry. Add an optional hint with <code>word | hint</code>.</small>
+            </label>
+
+            <div class="actions">
+              <button id="saveCategory" class="primary" type="button">Save category</button>
+              <button id="clearCategory" class="ghost" type="button">Clear form</button>
+            </div>
+          </div>
+
+          <div id="customCategoryList" class="saved-category-list" aria-live="polite"></div>
+        </section>
+
         <div class="note">
-          <strong>How it works:</strong> One random Imposter sees “Imposter” (plus any clues you allow). Crewmates see the secret word. Tap to reveal, tap again to hide, then pass the phone clockwise.
+          <strong>How it works:</strong> One random Imposter sees "Imposter" (plus any clues you allow). Crewmates see the secret word. Tap to reveal, tap again to hide, then pass the phone clockwise.
         </div>
         <div id="setupMessage" class="message message-hidden" role="status" aria-live="polite"></div>
-        <div id="setupMessage" class="message message-hidden"></div>
       </section>
 
       <section class="panel">
@@ -78,28 +111,20 @@
         </header>
 
         <div id="roundContainer" class="round-container">
-          <div id="hiddenView" class="card focus-card" tabindex="0">
-          <span class="pill ghost" id="roundStatus">Waiting to start</span>
-        </header>
-
-        <div id="roundContainer">
-          <div id="hiddenView" class="card">
+          <div id="hiddenView" class="card focus-card">
             <p class="eyebrow muted">Pass the phone</p>
             <h3 id="playerPrompt">Player 1, your turn</h3>
-            <p class="muted">Tap below when you’re ready to see your role.</p>
-            <button id="revealButton" class="primary stretch">Tap to reveal</button>
+            <p class="muted">Tap below when you're ready to see your role.</p>
+            <button id="revealButton" class="primary stretch" type="button">Tap to reveal</button>
             <p class="safe-area-hint">Tip: Use landscape for bigger tap targets.</p>
-          </div>
-
-          <div id="revealView" class="card focus-card is-hidden" tabindex="0">
           </div>
 
           <div id="revealView" class="card is-hidden">
             <p class="eyebrow" id="roleTag">Role</p>
             <h3 id="roleHeadline">You are the Imposter</h3>
             <ul id="roleDetails" class="detail-list"></ul>
-            <button id="hideButton" class="secondary stretch">Hide &amp; pass</button>
-            <p class="muted small">Tap or press space/enter to hide on mobile/desktop.</p>
+            <button id="hideButton" class="secondary stretch" type="button">Hide &amp; pass</button>
+            <p class="muted small">Tap or press space/enter to hide on mobile or desktop.</p>
           </div>
 
           <div id="completeView" class="card is-hidden">
@@ -107,8 +132,8 @@
             <h3>Discuss, then vote out the Imposter.</h3>
             <p class="muted">Need a fresh word? Start another round.</p>
             <div class="actions">
-              <button id="restartRound" class="primary">Start another round</button>
-              <button id="reshuffleRoles" class="ghost">Reuse word, reshuffle roles</button>
+              <button id="restartRound" class="primary" type="button">Start another round</button>
+              <button id="reshuffleRoles" class="ghost" type="button">Reuse word, reshuffle roles</button>
             </div>
           </div>
         </div>
