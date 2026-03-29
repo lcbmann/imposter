@@ -1,5 +1,7 @@
 # Imposter
 
+Current version: `v1.2.0`
+
 A lightweight, pass-the-phone party game. One player is secretly the Imposter, everyone else sees the secret word. Players reveal their role one at a time, say related words in turn, then vote out who they think the Imposter is.
 
 ## Features

@@ -237,6 +237,12 @@ button:hover {
   color: var(--accent-strong);
 }
 
+.pill-version {
+  border-color: rgba(110, 231, 183, 0.45);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
 .pill-group {
   display: flex;
   gap: 8px;
